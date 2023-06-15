@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user-dto';
@@ -6,12 +6,20 @@ import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from './dto/login-user-dto';
 import { UpdateUserDto } from './dto/update-user-dto';
+import { User_meta } from './entities/user-meta.entity';
+import { User_role } from './entities/user-role.entity';
+import { RolesService } from 'src/roles/roles.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(User_meta)
+    private user_metaRepository: Repository<User_meta>,
+    @InjectRepository(User_role)
+    private user_roleRepository: Repository<User_role>,
+    private roleService: RolesService,
   ) {}
 
   async signupUser(createUserDto: CreateUserDto): Promise<any> {
@@ -96,8 +104,11 @@ export class UsersService {
   }
 
   async getAllUserNames(): Promise<any> {
-    const usernames = await this.usersRepository.find({
+    const names = await this.usersRepository.find({
       select: ['user_name'],
+    });
+    const usernames = names.map((name) => {
+      return { username: name };
     });
     return usernames;
   }
@@ -134,5 +145,77 @@ export class UsersService {
       where: { user_phone: phone },
     });
     return user;
+  }
+
+  async setUserNickname(nickname: string, id: number): Promise<any> {
+    const user = await this.getUser(id);
+
+    const user_meta = new User_meta();
+    user_meta.meta_key = 'nickname';
+    user_meta.meta_value = nickname;
+    user_meta.user = user;
+    await this.user_metaRepository.save(user_meta);
+    return user_meta;
+  }
+
+  async getUserMeta(id: number): Promise<any> {
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: ['user_meta'],
+    });
+
+    const meta = user.user_meta;
+    return meta;
+  }
+
+  async setUserMeta(id: number, key: string, value: string): Promise<any> {
+    const user = await this.getUser(id);
+
+    const user_meta = new User_meta();
+    user_meta.meta_key = key;
+    user_meta.meta_value = value;
+    user_meta.user = user;
+
+    await this.user_metaRepository.save(user_meta);
+    return user_meta;
+  }
+
+  async setUserRole(userId: number, roleId: number): Promise<any> {
+    const user = await this.getUser(userId);
+    const role = await this.roleService.getRole(roleId);
+
+    const user_role = new User_role();
+    user_role.user = user;
+    user_role.role = role;
+
+    await this.user_roleRepository.save(user_role);
+    return user_role;
+  }
+
+  async getUserRole(id: number) {
+    const user_role = await this.user_roleRepository.findOne({
+      where: { user: { id: id } },
+      relations: ['role'],
+    });
+
+    const role = user_role.role;
+    return role;
+  }
+
+  async deleteUserRole(id: number): Promise<any> {
+    const user_role = await this.user_roleRepository.findOne({
+      where: { user: { id: id } },
+      relations: ['role', 'user'],
+    });
+
+    await this.user_roleRepository.softDelete(user_role.id);
+    return user_role;
+  }
+
+  async updateUserRole(userId: number, roleId: number): Promise<any> {
+    await this.deleteUserRole(userId);
+
+    const user_role = await this.setUserRole(userId, roleId);
+    return user_role;
   }
 }

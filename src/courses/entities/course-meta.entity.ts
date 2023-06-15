@@ -4,13 +4,12 @@ import {
   DeleteDateColumn,
   Entity,
   ManyToOne,
-  PrimaryColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { User } from './user.entity';
+import { Course } from './course.entity';
 
 @Entity()
-export class User_meta {
+export class Course_meta {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -26,6 +25,6 @@ export class User_meta {
   @DeleteDateColumn()
   deletedAt: Date;
 
-  @ManyToOne((type) => User, (user) => user.user_meta)
-  user: User;
+  @ManyToOne((type) => Course, (course) => course.course_meta)
+  course: Course;
 }

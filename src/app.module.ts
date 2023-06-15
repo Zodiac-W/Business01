@@ -8,6 +8,9 @@ import database from './config/database.config';
 import { TypeOrmConfigService } from './database/typeorm-config.service';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { CoursesModule } from './courses/courses.module';
+import { RolesModule } from './roles/roles.module';
+import { LessonsModule } from './lessons/lessons.module';
 
 @Module({
   imports: [
@@ -25,6 +28,9 @@ import { UsersModule } from './users/users.module';
     }),
     AuthModule,
     UsersModule,
+    CoursesModule,
+    RolesModule,
+    LessonsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

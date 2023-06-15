@@ -7,7 +7,6 @@ import {
   ParseIntPipe,
   Post,
   Put,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -19,6 +18,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt.auth.guard';
+import { User } from 'src/decorators/user.decorator';
 import { CreateUserDto } from './dto/create-user-dto';
 import { UpdateUserDto } from './dto/update-user-dto';
 import { UsersService } from './users.service';
@@ -173,5 +173,139 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.usersService.updateUser(id, updateUserDto);
+  }
+
+  @ApiOperation({ summary: 'Adding nickname to user meta data' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    description: 'The id of the selected user',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        nickname: {
+          type: 'string',
+          example: 'ZODAIC',
+        },
+      },
+    },
+    description: 'The nickname for the user',
+    required: true,
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The user_meta data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('nickname/:id')
+  setUserNickname(
+    @Body('nickname') nickname: string,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.usersService.setUserNickname(nickname, id);
+  }
+
+  @ApiOperation({ summary: 'Get all course meta data' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    description: 'The id of the selected user',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The meta data of the selected user',
+    type: Array,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Get('/meta/:id')
+  getUserMeta(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getUserMeta(id);
+  }
+
+  @Post('meta/new/:id')
+  setUserMeta(
+    @Body('key') key: string,
+    @Body('value') value: any,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.usersService.setUserMeta(id, key, value);
+  }
+
+  @ApiOperation({ summary: "Get the user's role" })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    description: 'The id of the selected user',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The user role data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Get('role/:id')
+  getUserRole(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getUserRole(id);
+  }
+
+  @ApiOperation({ summary: "Set user's role" })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    description: 'The id of the selected role',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The user role data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('role/new/:id')
+  setUserRole(@Param('id', ParseIntPipe) id: number, @User() user: any) {
+    return this.usersService.setUserRole(user.userId, id);
+  }
+
+  @ApiOperation({ summary: 'Delete user role' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    description: 'The id of the selected user',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The deleted role data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Delete('role/delete/:id')
+  deleteUserRole(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.deleteUserRole(id);
+  }
+
+  @ApiOperation({ summary: 'Update the user role' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'intege',
+    description: 'The id of the new role',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The new user role data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Put('role/update/:id')
+  updateUserRole(@Param('id', ParseIntPipe) id: number, @User() user: any) {
+    return this.usersService.updateUserRole(user.userId, id);
   }
 }

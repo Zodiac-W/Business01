@@ -4,10 +4,12 @@ import {
   DeleteDateColumn,
   Entity,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { UserType } from '../enums/user-type.enum';
 import { User_meta } from './user-meta.entity';
+import { User_role } from './user-role.entity';
 
 @Entity()
 export class User {
@@ -40,4 +42,7 @@ export class User {
 
   @OneToMany((type) => User_meta, (user_meta) => user_meta.user)
   user_meta: User_meta[];
+
+  @OneToMany((type) => User_role, (user_role) => user_role.user)
+  user_role: User_role[];
 }

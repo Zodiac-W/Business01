@@ -1,31 +1,29 @@
+import { Role } from 'src/roles/entities/role.entity';
 import {
-  Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
-  PrimaryColumn,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from './user.entity';
 
 @Entity()
-export class User_meta {
+export class User_role {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column()
-  meta_key: string;
-
-  @Column()
-  meta_value: string;
 
   @CreateDateColumn()
   createdAt: Date;
 
   @DeleteDateColumn()
-  deletedAt: Date;
+  deletedAT: Date;
 
-  @ManyToOne((type) => User, (user) => user.user_meta)
+  @ManyToOne((type) => User, (user) => user.user_role)
   user: User;
+
+  @ManyToOne((type) => Role, (role) => role.user_role)
+  role: Role;
 }
