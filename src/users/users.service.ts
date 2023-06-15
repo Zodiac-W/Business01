@@ -9,6 +9,9 @@ import { UpdateUserDto } from './dto/update-user-dto';
 import { User_meta } from './entities/user-meta.entity';
 import { User_role } from './entities/user-role.entity';
 import { RolesService } from 'src/roles/roles.service';
+import { User_lesson } from './entities/user-lesson.entity';
+import { LessonsService } from 'src/lessons/lessons.service';
+import { UserLessonStatus } from './enums/user-lesson-status.enum';
 
 @Injectable()
 export class UsersService {
@@ -20,6 +23,9 @@ export class UsersService {
     @InjectRepository(User_role)
     private user_roleRepository: Repository<User_role>,
     private roleService: RolesService,
+    @InjectRepository(User_lesson)
+    private user_lessonRepository: Repository<User_lesson>,
+    private lessonsService: LessonsService,
   ) {}
 
   async signupUser(createUserDto: CreateUserDto): Promise<any> {
@@ -217,5 +223,31 @@ export class UsersService {
 
     const user_role = await this.setUserRole(userId, roleId);
     return user_role;
+  }
+
+  async getUserLesson(id: number): Promise<any> {
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: ['user_lesson', 'user_lesson.lesson'],
+    });
+    const lessons = user.user_lesson;
+    return lessons;
+  }
+
+  async setUserLesson(
+    userId: number,
+    lessonId: number,
+    status: UserLessonStatus,
+  ): Promise<any> {
+    const user = await this.getUser(userId);
+    const lesson = await this.lessonsService.getLesson(lessonId);
+
+    const user_lesson = new User_lesson();
+    user_lesson.user = user;
+    user_lesson.lesson = lesson;
+    user_lesson.user_lesson_status = status;
+
+    await this.user_lessonRepository.save(user_lesson);
+    return user_lesson;
   }
 }

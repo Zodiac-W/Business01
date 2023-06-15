@@ -21,6 +21,7 @@ import { JwtAuthGuard } from 'src/auth/jwt.auth.guard';
 import { User } from 'src/decorators/user.decorator';
 import { CreateUserDto } from './dto/create-user-dto';
 import { UpdateUserDto } from './dto/update-user-dto';
+import { UserLessonStatus } from './enums/user-lesson-status.enum';
 import { UsersService } from './users.service';
 
 @ApiTags('Users')
@@ -307,5 +308,62 @@ export class UsersController {
   @Put('role/update/:id')
   updateUserRole(@Param('id', ParseIntPipe) id: number, @User() user: any) {
     return this.usersService.updateUserRole(user.userId, id);
+  }
+
+  @ApiOperation({ summary: "Get users's lessons" })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    description: 'The id of the selected user',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The user list of lessons',
+    type: [Object],
+  })
+  @UseGuards(JwtAuthGuard)
+  @Get('/lesson/:id')
+  getUserLesson(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getUserLesson(id);
+  }
+
+  @ApiOperation({ summary: "Set user's lesson" })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    description: 'The id of the selected user',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        lessonId: {
+          type: 'number',
+          example: 2,
+          description: 'The selected lesson id',
+        },
+        status: {
+          type: 'UserLessonStatus',
+          example: 'Done',
+          description: 'The user status for the course',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The user and lesson data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('/lesson/set/:id')
+  setUserLesson(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('lessonId') lessonId: number,
+    @Body('status') status: UserLessonStatus,
+  ) {
+    return this.usersService.setUserLesson(id, lessonId, status);
   }
 }

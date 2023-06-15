@@ -1,4 +1,5 @@
 import { Course_lesson } from 'src/courses/entities/course-lesson.entity';
+import { User_lesson } from 'src/users/entities/user-lesson.entity';
 import {
   Column,
   CreateDateColumn,
@@ -40,4 +41,7 @@ export class Lesson {
 
   @OneToMany((type) => Course_lesson, (course_lesson) => course_lesson.lesson)
   course_lesson: Course_lesson[];
+
+  @OneToMany((type) => User_lesson, (user_lesson) => user_lesson.lesson)
+  user_lesson: User_lesson[];
 }

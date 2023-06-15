@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { UserType } from '../enums/user-type.enum';
+import { User_lesson } from './user-lesson.entity';
 import { User_meta } from './user-meta.entity';
 import { User_role } from './user-role.entity';
 
@@ -45,4 +46,7 @@ export class User {
 
   @OneToMany((type) => User_role, (user_role) => user_role.user)
   user_role: User_role[];
+
+  @OneToMany((type) => User_lesson, (user_lesson) => user_lesson.user)
+  user_lesson: User_lesson[];
 }
