@@ -8,8 +8,9 @@ import { Lesson_meta } from 'src/lessons/entities/lesson-meta.entity';
 import { Lesson } from 'src/lessons/entities/lesson.entity';
 import { Role } from 'src/roles/entities/role.entity';
 import { Instructor_course } from 'src/users/entities/instructor-course.entity';
+import { Instructor_lesson } from 'src/users/entities/instructor-lesson.entity';
 import { Student_course } from 'src/users/entities/student-course.entity';
-import { User_lesson } from 'src/users/entities/user-lesson.entity';
+import { Student_lesson } from 'src/users/entities/student-lesson.entity';
 import { User_meta } from 'src/users/entities/user-meta.entity';
 import { User_role } from 'src/users/entities/user-role.entity';
 import { User } from 'src/users/entities/user.entity';
@@ -37,9 +38,10 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         Lesson,
         Lesson_meta,
         Course_lesson,
-        User_lesson,
+        Student_lesson,
         Student_course,
         Instructor_course,
+        Instructor_lesson,
       ],
       migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
       cli: {

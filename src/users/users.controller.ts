@@ -20,11 +20,13 @@ import {
 import { JwtAuthGuard } from 'src/auth/jwt.auth.guard';
 import { CreateCourseDto } from 'src/courses/dto/create-course-dto';
 import { User } from 'src/decorators/user.decorator';
+import { CreateLessonDto } from 'src/lessons/dto/create-lesson-dto';
 import { CreateUserDto } from './dto/create-user-dto';
 import { UpdateUserDto } from './dto/update-user-dto';
 import { InstructorCourseStatus } from './enums/instructor-course-status.enum';
+import { InstructorLessonStatus } from './enums/instructor-lesson-status.enum';
 import { StudentCourseStatus } from './enums/student-course-status.enum';
-import { UserLessonStatus } from './enums/user-lesson-status.enum';
+import { StudentLessonStatus } from './enums/student-lesson-status.enum';
 import { Student } from './guards/student.guard';
 import { Teacher } from './guards/teacher.guard';
 import { UsersService } from './users.service';
@@ -108,7 +110,6 @@ export class UsersController {
     },
     description: 'The phone number of the user',
     required: true,
-    type: String,
   })
   @UseGuards(JwtAuthGuard)
   @Post('/phone')
@@ -218,7 +219,6 @@ export class UsersController {
     },
     description: 'The nickname for the user',
     required: true,
-    type: String,
   })
   @ApiResponse({
     status: 200,
@@ -233,7 +233,13 @@ export class UsersController {
   ) {
     return this.usersService.setUserNickname(nickname, id);
   }
-
+  /**
+   *
+   *  USER - META
+   *  GET USER META
+   *  SET USER META
+   *
+   */
   @ApiOperation({ summary: 'Get all user meta data' })
   @ApiBearerAuth()
   @ApiParam({
@@ -252,6 +258,36 @@ export class UsersController {
     return this.usersService.getUserMeta(id);
   }
 
+  @ApiOperation({ summary: 'Set user meta data' })
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    description: 'The selected user id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        key: {
+          type: 'string',
+          example: 'place',
+          description: 'The meta data key',
+        },
+        value: {
+          type: 'any',
+          example: 'Egypt',
+          description: 'The meta data value',
+        },
+      },
+    },
+    description: 'The meta data',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The added meta data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
   @Post('meta/new/:id')
   setUserMeta(
     @Body('key') key: string,
@@ -260,7 +296,15 @@ export class UsersController {
   ) {
     return this.usersService.setUserMeta(id, key, value);
   }
-
+  /**
+   *
+   *  USER - ROLE
+   *  GET USER ROLE
+   *  SET USER ROLE
+   *  DELETE USER ROLE
+   *  UPDATE USER ROLE
+   *
+   */
   @ApiOperation({ summary: "Get the user's role" })
   @ApiBearerAuth()
   @ApiParam({
@@ -298,7 +342,6 @@ export class UsersController {
       },
     },
     description: 'The role id',
-    type: Object,
   })
   @ApiResponse({
     status: 200,
@@ -352,64 +395,16 @@ export class UsersController {
   ) {
     return this.usersService.updateUserRole(id, roleId);
   }
-
-  @ApiOperation({ summary: "Get users's lessons" })
-  @ApiBearerAuth()
-  @ApiParam({
-    name: 'id',
-    type: 'integer',
-    description: 'The id of the selected user',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'The user list of lessons',
-    type: [Object],
-  })
-  @UseGuards(JwtAuthGuard)
-  @Get('/lesson/:id')
-  getUserLesson(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.getUserLesson(id);
-  }
-
-  @ApiOperation({ summary: "Set user's lesson" })
-  @ApiBearerAuth()
-  @ApiParam({
-    name: 'id',
-    type: 'integer',
-    description: 'The id of the selected user',
-  })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        lessonId: {
-          type: 'number',
-          example: 2,
-          description: 'The selected lesson id',
-        },
-        status: {
-          type: 'UserLessonStatus',
-          example: 'Done',
-          description: 'The user status for the course',
-        },
-      },
-    },
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'The user and lesson data',
-    type: Object,
-  })
-  @UseGuards(JwtAuthGuard)
-  @Post('/lesson/set/:id')
-  setUserLesson(
-    @Param('id', ParseIntPipe) id: number,
-    @Body('lessonId') lessonId: number,
-    @Body('status') status: UserLessonStatus,
-  ) {
-    return this.usersService.setUserLesson(id, lessonId, status);
-  }
-
+  /**
+   *
+   *  STUDENT - COURSE
+   *  GET ALL
+   *  GET ONE
+   *  SET ONE
+   *  DELETE ONE
+   *  UPDATE ONE STATUS
+   *
+   */
   @ApiOperation({ summary: 'Get all student courses' })
   @ApiBearerAuth()
   @ApiParam({
@@ -447,7 +442,6 @@ export class UsersController {
       },
     },
     description: 'The course id',
-    type: Object,
   })
   @ApiResponse({
     status: 200,
@@ -486,7 +480,6 @@ export class UsersController {
       },
     },
     description: 'The course data',
-    type: Object,
   })
   @ApiResponse({
     status: 200,
@@ -522,7 +515,6 @@ export class UsersController {
       },
     },
     description: 'The course id',
-    type: Object,
   })
   @ApiResponse({
     status: 200,
@@ -562,7 +554,6 @@ export class UsersController {
       },
     },
     description: 'The course id and the new status',
-    type: Object,
   })
   @ApiResponse({
     status: 200,
@@ -578,7 +569,16 @@ export class UsersController {
   ) {
     return this.usersService.updateStudentCourseStatus(id, courseId, status);
   }
-
+  /**
+   *
+   *  INSTRUCTOR - COURSE
+   *  GET ALL
+   *  GET ONE
+   *  SET ONE
+   *  DELETE ONE
+   *  UPDATE ONE STATUS
+   *
+   */
   @ApiOperation({ summary: 'Get all instructor courses' })
   @ApiBearerAuth()
   @ApiParam({
@@ -616,7 +616,6 @@ export class UsersController {
       },
     },
     description: 'The course id',
-    type: Object,
   })
   @ApiResponse({
     status: 200,
@@ -673,6 +672,35 @@ export class UsersController {
 
   @ApiOperation({ summary: 'Update the instructor course status' })
   @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'number',
+    description: 'The selected user id',
+    example: 3,
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        courseId: {
+          type: 'number',
+          example: 2,
+          description: 'The selected course id',
+        },
+        status: {
+          type: 'InstructorCourseStatus',
+          example: InstructorCourseStatus.DONE,
+          description: 'The new course status',
+        },
+      },
+    },
+    description: 'The course id and new status',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The new course status',
+    type: Object,
+  })
   @UseGuards(JwtAuthGuard, Teacher)
   @Put('/course/instructor/update/status/:id')
   updateInstructorCourseStatus(
@@ -682,4 +710,351 @@ export class UsersController {
   ) {
     return this.usersService.updateInstructorCourseStatus(id, courseId, status);
   }
+  /**
+   *
+   *  STUDENT - LESSON
+   *  GET ALL
+   *  GET ONE
+   *  SET ONE
+   *  DELETE ONE
+   *  UPDATE ONE STATUS
+   *
+   */
+  @ApiOperation({ summary: "Get all student's lessons" })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    description: 'The id of the selected user',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The user list of lessons',
+    type: [Object],
+  })
+  @UseGuards(JwtAuthGuard, Student)
+  @Get('/lesson/:id')
+  getUserLessons(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getStudentLessons(id);
+  }
+
+  @ApiOperation({ summary: 'Get one student course' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    description: 'The selected user id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        lessonId: {
+          type: 'number',
+          example: 2,
+          description: 'The selected lesson id',
+        },
+      },
+    },
+    description: 'The lesson id',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Selected lesson data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard, Student)
+  @Post('/lesson/one/:id')
+  getUserLesson(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('lessonId') lessonId: number,
+  ) {
+    return this.usersService.getStudentLesson(id, lessonId);
+  }
+
+  @ApiOperation({ summary: "Set student's lesson" })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    description: 'The id of the selected user',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        lessonId: {
+          type: 'number',
+          example: 2,
+          description: 'The selected lesson id',
+        },
+        status: {
+          type: 'StudentLessonStatus',
+          example: StudentLessonStatus.DONE,
+          description: 'The user status for the course',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The user and lesson data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard, Student)
+  @Post('/lesson/set/:id')
+  setUserLesson(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('lessonId') lessonId: number,
+    @Body('status') status: StudentLessonStatus,
+  ) {
+    return this.usersService.setStudentLesson(id, lessonId, status);
+  }
+
+  @ApiOperation({ summary: 'Delete student lesson' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    description: 'The selected user id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        lessonId: {
+          type: 'number',
+          example: 3,
+          description: 'The selected lesson id',
+        },
+      },
+    },
+    description: 'The lesson id',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The deleted lesson data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard, Student)
+  @Delete('/lesson/delete/:id')
+  deleteStudentLesson(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('lessonId') lessonId: number,
+  ) {
+    return this.usersService.deleteStudentLesson(id, lessonId);
+  }
+
+  @ApiOperation({ summary: 'Update student lesson status' })
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    description: 'The selected user id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        lessonId: {
+          type: 'number',
+          example: 1,
+          description: 'The selected lesson id',
+        },
+        status: {
+          type: 'StudentLessonStatus',
+          example: StudentLessonStatus.DONE,
+          description: 'The new lesson status',
+        },
+      },
+    },
+    description: 'The lesson id and the new status',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The new student lesson data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard, Student)
+  @Put('lesson/update/status/:id')
+  updateStudentLessonStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('lessonId') lessonId: number,
+    @Body('status') status: StudentLessonStatus,
+  ) {
+    return this.usersService.updateStudentLessonStatus(id, lessonId, status);
+  }
+  /**
+   *
+   *  INSTRUCTOR - LESSON
+   *  GET ALL
+   *  GET ONE
+   *  SET ONE
+   *  DELETE ONE
+   *  UPDATE ONE STATUS
+   *
+   */
+
+  @ApiOperation({ summary: 'Get all instructor lessons' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    description: 'The selected user id',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The user lessons',
+    type: [Object],
+  })
+  @UseGuards(JwtAuthGuard, Teacher)
+  @Get('/lesson/instructor/:id')
+  getInstructorLessons(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getInstructorLessons(id);
+  }
+
+  @ApiOperation({ summary: 'Get one instructor lesson' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    description: 'The selected user id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        lessonId: {
+          type: 'number',
+          example: 3,
+          description: 'The selected lesson id',
+        },
+      },
+    },
+    description: 'The lesson id',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The lesson data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard, Teacher)
+  @Post('/lesson/instructor/one/:id')
+  getInstructorLesson(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('lessonId') lessonId: number,
+  ) {
+    return this.usersService.getInstructorLesson(id, lessonId);
+  }
+
+  @ApiOperation({ summary: 'Set new instructor lesson' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    description: 'The selected user id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'CreateLessonDto',
+    },
+    description: 'The lesson data',
+    type: CreateLessonDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The instructor lesson data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('/lesson/instructor/set/:id')
+  setInstructorLesson(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() CreateLessonDto: CreateLessonDto,
+  ) {
+    return this.usersService.setInstructorLesson(id, CreateLessonDto);
+  }
+
+  @ApiOperation({ summary: 'Delete instructor lesson' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    description: 'The selected user id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        lessonId: {
+          type: 'number',
+          example: 2,
+          description: 'The selected lesson id',
+        },
+      },
+    },
+    description: 'The lesson id',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The deleted instructor lesson data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard, Teacher)
+  @Delete('/lesson/instructor/delete/:id')
+  deleteInstructorLesson(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('lessonId') lessonId: number,
+  ) {
+    return this.usersService.deleteInstructorLesson(id, lessonId);
+  }
+
+  @ApiOperation({ summary: 'Update instructor lesson status' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    description: 'The selected user id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        lessonId: {
+          type: 'number',
+          example: 2,
+          description: 'The selected lesson id',
+        },
+        status: {
+          type: 'InstructorLessonStatus',
+          example: InstructorCourseStatus.DONE,
+          description: 'The new lesson status',
+        },
+      },
+    },
+    description: 'The lesson id and the new status',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The updated instructor lesson data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard, Teacher)
+  @Put('/lesson/instructor/update/status/:id')
+  updateInstructorLessonStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('lesosnId') lessonId: number,
+    @Body('status') status: InstructorLessonStatus,
+  ) {
+    return this.usersService.updateInstructorLessonStatus(id, lessonId, status);
+  }
+  /**
+   *
+   *  STUDENT - QUIZ
+   *  GET ALL
+   *  GET ONE
+   *  SET ONE
+   *  DELETE ONE
+   *  UPDATE ONE STATUS
+   *
+   */
 }

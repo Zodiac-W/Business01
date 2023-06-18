@@ -9,15 +9,18 @@ import { UpdateUserDto } from './dto/update-user-dto';
 import { User_meta } from './entities/user-meta.entity';
 import { User_role } from './entities/user-role.entity';
 import { RolesService } from 'src/roles/roles.service';
-import { User_lesson } from './entities/user-lesson.entity';
+import { Student_lesson } from './entities/student-lesson.entity';
 import { LessonsService } from 'src/lessons/lessons.service';
-import { UserLessonStatus } from './enums/user-lesson-status.enum';
+import { StudentLessonStatus } from './enums/student-lesson-status.enum';
 import { Student_course } from './entities/student-course.entity';
 import { CoursesService } from 'src/courses/courses.service';
 import { StudentCourseStatus } from './enums/student-course-status.enum';
 import { Instructor_course } from './entities/instructor-course.entity';
 import { CreateCourseDto } from 'src/courses/dto/create-course-dto';
 import { InstructorCourseStatus } from './enums/instructor-course-status.enum';
+import { Instructor_lesson } from './entities/instructor-lesson.entity';
+import { CreateLessonDto } from 'src/lessons/dto/create-lesson-dto';
+import { InstructorLessonStatus } from './enums/instructor-lesson-status.enum';
 
 @Injectable()
 export class UsersService {
@@ -26,12 +29,10 @@ export class UsersService {
     private usersRepository: Repository<User>,
     @InjectRepository(User_meta)
     private user_metaRepository: Repository<User_meta>,
+
     @InjectRepository(User_role)
     private user_roleRepository: Repository<User_role>,
     private roleService: RolesService,
-    @InjectRepository(User_lesson)
-    private user_lessonRepository: Repository<User_lesson>,
-    private lessonsService: LessonsService,
 
     @InjectRepository(Student_course)
     private student_courseRepository: Repository<Student_course>,
@@ -39,6 +40,13 @@ export class UsersService {
 
     @InjectRepository(Instructor_course)
     private instructor_courseRepository: Repository<Instructor_course>,
+
+    @InjectRepository(Student_lesson)
+    private student_lessonRepository: Repository<Student_lesson>,
+    private lessonsService: LessonsService,
+
+    @InjectRepository(Instructor_lesson)
+    private instructor_lessonRepository: Repository<Instructor_lesson>,
   ) {}
 
   async signupUser(createUserDto: CreateUserDto): Promise<any> {
@@ -172,6 +180,11 @@ export class UsersService {
     });
     return user;
   }
+  /**
+   *
+   * USER - NICKNAME
+   *
+   */
 
   async setUserNickname(nickname: string, id: number): Promise<any> {
     const user = await this.getUser(id);
@@ -183,7 +196,11 @@ export class UsersService {
     await this.user_metaRepository.save(user_meta);
     return user_meta;
   }
-
+  /**
+   *
+   * USER - META
+   *
+   */
   async getUserMeta(id: number): Promise<any> {
     const user = await this.usersRepository.findOne({
       where: { id },
@@ -205,6 +222,11 @@ export class UsersService {
     await this.user_metaRepository.save(user_meta);
     return user_meta;
   }
+  /**
+   *
+   * USER - ROLE
+   *
+   */
 
   async setUserRole(userId: number, roleId: number): Promise<any> {
     const user = await this.getUser(userId);
@@ -245,31 +267,11 @@ export class UsersService {
     return user_role;
   }
 
-  async getUserLesson(id: number): Promise<any> {
-    const user = await this.usersRepository.findOne({
-      where: { id },
-      relations: ['user_lesson', 'user_lesson.lesson'],
-    });
-    const lessons = user.user_lesson;
-    return lessons;
-  }
-
-  async setUserLesson(
-    userId: number,
-    lessonId: number,
-    status: UserLessonStatus,
-  ): Promise<any> {
-    const user = await this.getUser(userId);
-    const lesson = await this.lessonsService.getLesson(lessonId);
-
-    const user_lesson = new User_lesson();
-    user_lesson.user = user;
-    user_lesson.lesson = lesson;
-    user_lesson.user_lesson_status = status;
-
-    await this.user_lessonRepository.save(user_lesson);
-    return user_lesson;
-  }
+  /**
+   *
+   * STUDENT - COURSE
+   *
+   */
 
   async getStudentCourses(id: number): Promise<any> {
     const user = await this.usersRepository.findOne({
@@ -331,6 +333,12 @@ export class UsersService {
     return student_course;
   }
 
+  /**
+   *
+   * INSTRUCTOR - COURSE
+   *
+   */
+
   async getInstructorCourses(id: number): Promise<any> {
     const user = await this.usersRepository.findOne({
       where: { id },
@@ -372,6 +380,7 @@ export class UsersService {
     await this.instructor_courseRepository.softDelete(instructor_course.id);
     return instructor_course;
   }
+
   async updateInstructorCourseStatus(
     userId: number,
     courseId: number,
@@ -382,5 +391,131 @@ export class UsersService {
 
     await this.instructor_courseRepository.save(instructor_course);
     return instructor_course;
+  }
+
+  /**
+   *
+   * STUDENT - LESSON
+   *
+   */
+
+  async getStudentLessons(id: number): Promise<any> {
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: ['student_lesson', 'student_lesson.lesson'],
+    });
+    const lessons = user.student_lesson;
+    return lessons;
+  }
+
+  async getStudentLesson(userId: number, lessonId: number): Promise<any> {
+    const student_lesson = await this.student_lessonRepository.findOne({
+      where: {
+        user: { id: userId },
+        lesson: { id: lessonId },
+      },
+      relations: ['lesson'],
+    });
+    return student_lesson;
+  }
+
+  async setStudentLesson(
+    userId: number,
+    lessonId: number,
+    status: StudentLessonStatus,
+  ): Promise<any> {
+    const exist = await this.getStudentLesson(userId, lessonId);
+    if (exist) {
+      return { message: 'Student is already enrolled' };
+    }
+    const user = await this.getUser(userId);
+    const lesson = await this.lessonsService.getLesson(lessonId);
+
+    const student_lesson = new Student_lesson();
+    student_lesson.user = user;
+    student_lesson.lesson = lesson;
+    student_lesson.student_lesson_status = status;
+
+    await this.student_lessonRepository.save(student_lesson);
+    return student_lesson;
+  }
+
+  async deleteStudentLesson(userId: number, lessonId: number): Promise<any> {
+    const student_lesson = await this.getStudentLesson(userId, lessonId);
+
+    await this.student_lessonRepository.softDelete(student_lesson.id);
+    return student_lesson;
+  }
+
+  async updateStudentLessonStatus(
+    userId: number,
+    lessonId: number,
+    status: StudentLessonStatus,
+  ): Promise<any> {
+    const student_lesson = await this.getStudentLesson(userId, lessonId);
+    student_lesson.student_lesson_status = status;
+
+    await this.student_lessonRepository.save(student_lesson);
+    return student_lesson;
+  }
+
+  /**
+   *
+   * INSTRUCTOR - LESSON
+   *
+   */
+
+  async getInstructorLessons(id: number): Promise<any> {
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: ['instructor_lesson', 'instructor_lesson.lesson'],
+    });
+    const lessons = user.instructor_lesson;
+    return lessons;
+  }
+
+  async getInstructorLesson(userId: number, lessonId: number): Promise<any> {
+    const instructor_lesson = await this.instructor_lessonRepository.findOne({
+      where: {
+        user: { id: userId },
+        lesson: { id: lessonId },
+      },
+      relations: ['lesson'],
+    });
+    return instructor_lesson;
+  }
+
+  async setInstructorLesson(
+    userId: number,
+    createLessonDto: CreateLessonDto,
+  ): Promise<any> {
+    const user = await this.getUser(userId);
+    const lesson = await this.lessonsService.createLesson(createLessonDto);
+
+    const instructor_lesson = new Instructor_lesson();
+    instructor_lesson.user = user;
+    instructor_lesson.lesson = lesson;
+
+    await this.instructor_lessonRepository.save(instructor_lesson);
+    return instructor_lesson;
+  }
+
+  async deleteInstructorLesson(userId: number, lessonId: number): Promise<any> {
+    const instructor_lesson = await this.getInstructorLesson(userId, lessonId);
+
+    await this.instructor_lessonRepository.softDelete(instructor_lesson.id);
+    return instructor_lesson;
+  }
+
+  async updateInstructorLessonStatus(
+    userId: number,
+    lessonId: number,
+    status: InstructorLessonStatus,
+  ): Promise<any> {
+    const instructor_lesson = await this.getInstructorLesson(userId, lessonId);
+    instructor_lesson.instructor_lesson_status = status;
+
+    await this.instructor_lessonRepository.save(instructor_lesson);
+    return instructor_lesson;
   }
 }

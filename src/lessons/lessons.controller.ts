@@ -245,4 +245,22 @@ export class LessonsController {
   ) {
     return this.lessonsService.setLessonMeta(id, key, value);
   }
+
+  @ApiOperation({ summary: 'The lesson instructor' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    description: 'The selected lesson id',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The lesson instructor',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Get('/instructor/:id')
+  getLessonInstructor(@Param('id', ParseIntPipe) id: number) {
+    return this.lessonsService.getLessonInstructor(id);
+  }
 }

@@ -7,20 +7,20 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UserLessonStatus } from '../enums/user-lesson-status.enum';
+import { StudentLessonStatus } from '../enums/student-lesson-status.enum';
 import { User } from './user.entity';
 
 @Entity()
-export class User_lesson {
+export class Student_lesson {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({
     type: 'enum',
-    enum: UserLessonStatus,
-    default: UserLessonStatus.NOT_STARTED,
+    enum: StudentLessonStatus,
+    default: StudentLessonStatus.NOT_STARTED,
   })
-  user_lesson_status: UserLessonStatus;
+  student_lesson_status: StudentLessonStatus;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -28,9 +28,9 @@ export class User_lesson {
   @DeleteDateColumn()
   deltedAt: Date;
 
-  @ManyToOne((type) => User, (user) => user.user_lesson)
+  @ManyToOne((type) => User, (user) => user.student_lesson)
   user: User;
 
-  @ManyToOne((type) => Lesson, (lesson) => lesson.user_lesson)
+  @ManyToOne((type) => Lesson, (lesson) => lesson.student_lesson)
   lesson: Lesson;
 }

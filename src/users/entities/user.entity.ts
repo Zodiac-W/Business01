@@ -9,8 +9,9 @@ import {
 } from 'typeorm';
 import { UserType } from '../enums/user-type.enum';
 import { Instructor_course } from './instructor-course.entity';
+import { Instructor_lesson } from './instructor-lesson.entity';
 import { Student_course } from './student-course.entity';
-import { User_lesson } from './user-lesson.entity';
+import { Student_lesson } from './student-lesson.entity';
 import { User_meta } from './user-meta.entity';
 import { User_role } from './user-role.entity';
 
@@ -49,8 +50,8 @@ export class User {
   @OneToMany((type) => User_role, (user_role) => user_role.user)
   user_role: User_role[];
 
-  @OneToMany((type) => User_lesson, (user_lesson) => user_lesson.user)
-  user_lesson: User_lesson[];
+  @OneToMany((type) => Student_lesson, (student_lesson) => student_lesson.user)
+  student_lesson: Student_lesson[];
 
   @OneToMany((type) => Student_course, (student_course) => student_course.user)
   student_course: Student_course[];
@@ -60,4 +61,10 @@ export class User {
     (instructor_course) => instructor_course.user,
   )
   instructor_course: Instructor_course[];
+
+  @OneToMany(
+    (type) => Instructor_lesson,
+    (instructor_lesson) => instructor_lesson.user,
+  )
+  instructor_lesson: Instructor_lesson[];
 }

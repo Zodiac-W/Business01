@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Instructor_lesson } from 'src/users/entities/instructor-lesson.entity';
 import { Repository } from 'typeorm';
 import { CreateLessonDto } from './dto/create-lesson-dto';
 import { UpdateLessonDto } from './dto/update-lesson-dto';
@@ -13,6 +14,9 @@ export class LessonsService {
     private lessonRepository: Repository<Lesson>,
     @InjectRepository(Lesson_meta)
     private lesson_metaRepository: Repository<Lesson_meta>,
+
+    @InjectRepository(Instructor_lesson)
+    private instructor_lessonRepository: Repository<Instructor_lesson>,
   ) {}
 
   async createLesson(createLessonDto: CreateLessonDto): Promise<any> {
@@ -124,5 +128,21 @@ export class LessonsService {
 
     await this.lesson_metaRepository.save(lesson_meta);
     return lesson_meta;
+  }
+
+  async getLessonInstructor(id: number): Promise<any> {
+    const lesson = await this.lessonRepository.findOne({
+      where: { id },
+      relations: ['instructor_lesson', 'instructor_lesson.user'],
+    });
+    const instructor_lesson = lesson.instructor_lesson;
+
+    const instructor = instructor_lesson.map((item) => {
+      return item.user;
+    });
+    if (instructor.length < 1) {
+      return { message: 'SUPERUSER' };
+    }
+    return instructor;
   }
 }
