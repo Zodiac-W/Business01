@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateLessonDto } from 'src/lessons/dto/create-lesson-dto';
 import { LessonsService } from 'src/lessons/lessons.service';
+import { Instructor_course } from 'src/users/entities/instructor-course.entity';
 import { Repository } from 'typeorm';
 import { CreateCourseDto } from './dto/create-course-dto';
 import { UpdateCourseDto } from './dto/update-course-dto';
@@ -19,6 +20,8 @@ export class CoursesService {
     @InjectRepository(Course_lesson)
     private course_lessonRepository: Repository<Course_lesson>,
     private lessonsService: LessonsService,
+    @InjectRepository(Instructor_course)
+    private instructor_courseRepository: Repository<Instructor_course>,
   ) {}
 
   async createCourse(createCourseDto: CreateCourseDto): Promise<any> {
@@ -171,5 +174,25 @@ export class CoursesService {
 
     await this.course_lessonRepository.save(course_lesson);
     return course_lesson;
+  }
+
+  async getCourseInstructor(id: number): Promise<any> {
+    const course = await this.courseRepository.findOne({
+      where: { id },
+      relations: ['instructor_course', 'instructor_course.user'],
+    });
+
+    const instructor_course = course.instructor_course;
+    // const instructor = instructor_course.find((item)=>)
+    // TEST THE ENDPOINT RETURN THEN COMPLETE THE ARRAY FUNCTION
+    // IF NULL THEN IT IS SUPERUSER
+
+    const instructor = instructor_course.map((item) => {
+      return item.user;
+    });
+    if (instructor.length < 1) {
+      return { message: 'SUPERUSER' };
+    }
+    return instructor;
   }
 }

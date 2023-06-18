@@ -1,3 +1,5 @@
+import { Instructor_course } from 'src/users/entities/instructor-course.entity';
+import { Student_course } from 'src/users/entities/student-course.entity';
 import {
   Column,
   CreateDateColumn,
@@ -37,4 +39,16 @@ export class Course {
 
   @OneToMany((tpye) => Course_lesson, (course_lesson) => course_lesson.course)
   course_lesson: Course_lesson[];
+
+  @OneToMany(
+    (type) => Student_course,
+    (student_course) => student_course.course,
+  )
+  student_course: Student_course[];
+
+  @OneToMany(
+    (type) => Instructor_course,
+    (instructor_course) => instructor_course.course,
+  )
+  instructor_course: Instructor_course[];
 }

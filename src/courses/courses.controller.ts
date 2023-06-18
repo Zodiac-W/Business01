@@ -330,4 +330,12 @@ export class CoursesController {
   ) {
     return this.coursesService.createCourseLesson(id, createLessonDto);
   }
+
+  @ApiOperation({ summary: "Get the course's instructor" })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('/instructor/:id')
+  getCourseInstructor(@Param('id', ParseIntPipe) id: number) {
+    return this.coursesService.getCourseInstructor(id);
+  }
 }

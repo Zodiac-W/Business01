@@ -12,6 +12,12 @@ import { RolesService } from 'src/roles/roles.service';
 import { User_lesson } from './entities/user-lesson.entity';
 import { LessonsService } from 'src/lessons/lessons.service';
 import { UserLessonStatus } from './enums/user-lesson-status.enum';
+import { Student_course } from './entities/student-course.entity';
+import { CoursesService } from 'src/courses/courses.service';
+import { StudentCourseStatus } from './enums/student-course-status.enum';
+import { Instructor_course } from './entities/instructor-course.entity';
+import { CreateCourseDto } from 'src/courses/dto/create-course-dto';
+import { InstructorCourseStatus } from './enums/instructor-course-status.enum';
 
 @Injectable()
 export class UsersService {
@@ -26,6 +32,13 @@ export class UsersService {
     @InjectRepository(User_lesson)
     private user_lessonRepository: Repository<User_lesson>,
     private lessonsService: LessonsService,
+
+    @InjectRepository(Student_course)
+    private student_courseRepository: Repository<Student_course>,
+    private coursesService: CoursesService,
+
+    @InjectRepository(Instructor_course)
+    private instructor_courseRepository: Repository<Instructor_course>,
   ) {}
 
   async signupUser(createUserDto: CreateUserDto): Promise<any> {
@@ -104,6 +117,13 @@ export class UsersService {
     const userId = user.id;
     return { userId };
   }
+
+  async getUserType(id: number): Promise<any> {
+    const user = await this.getUser(id);
+    const user_type = user.user_type;
+    return { user_type };
+  }
+
   async getAllUsers(): Promise<any> {
     const users = await this.usersRepository.find();
     return users;
@@ -249,5 +269,118 @@ export class UsersService {
 
     await this.user_lessonRepository.save(user_lesson);
     return user_lesson;
+  }
+
+  async getStudentCourses(id: number): Promise<any> {
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: ['student_course', 'student_course.course'],
+    });
+    const courses = user.student_course;
+    return courses;
+  }
+
+  async getStudentCourse(userId: number, courseId: number): Promise<any> {
+    const student_course = await this.student_courseRepository.findOne({
+      where: {
+        user: { id: userId },
+        course: { id: courseId },
+      },
+      relations: ['course'],
+    });
+    return student_course;
+  }
+
+  async setStudentCourse(
+    userId: number,
+    courseId: number,
+    status: StudentCourseStatus,
+  ): Promise<any> {
+    const exist = await this.getStudentCourse(userId, courseId);
+    if (exist) {
+      return { message: 'Student is already enrolled' };
+    }
+    const user = await this.getUser(userId);
+    const course = await this.coursesService.getCourse(courseId);
+
+    const student_course = new Student_course();
+    student_course.user = user;
+    student_course.course = course;
+    student_course.student_course_status = status;
+
+    await this.student_courseRepository.save(student_course);
+    return student_course;
+  }
+
+  async deleteStudentCourse(userId: number, courseId: number): Promise<any> {
+    const student_course = await this.getStudentCourse(userId, courseId);
+
+    await this.student_courseRepository.softDelete(student_course.id);
+    return student_course;
+  }
+
+  async updateStudentCourseStatus(
+    userId: number,
+    courseId: number,
+    status: StudentCourseStatus,
+  ): Promise<any> {
+    const student_course = await this.getStudentCourse(userId, courseId);
+    student_course.student_course_status = status;
+
+    await this.student_courseRepository.save(student_course);
+    return student_course;
+  }
+
+  async getInstructorCourses(id: number): Promise<any> {
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: ['instructor_course', 'instructor_course.course'],
+    });
+    const courses = user.instructor_course;
+    return courses;
+  }
+
+  async getInstructorCourse(userId: number, courseId: number): Promise<any> {
+    const instructor_course = await this.instructor_courseRepository.findOne({
+      where: {
+        user: { id: userId },
+        course: { id: courseId },
+      },
+      relations: ['course'],
+    });
+    return instructor_course;
+  }
+
+  async setInstructorCourse(
+    userId: number,
+    createCourseDto: CreateCourseDto,
+  ): Promise<any> {
+    const user = await this.getUser(userId);
+    const course = await this.coursesService.createCourse(createCourseDto);
+
+    const instructor_course = new Instructor_course();
+    instructor_course.user = user;
+    instructor_course.course = course;
+
+    await this.instructor_courseRepository.save(instructor_course);
+    return instructor_course;
+  }
+
+  async deleteInstructorCourse(userId: number, coruseId: number): Promise<any> {
+    const instructor_course = await this.getInstructorCourse(userId, coruseId);
+
+    await this.instructor_courseRepository.softDelete(instructor_course.id);
+    return instructor_course;
+  }
+  async updateInstructorCourseStatus(
+    userId: number,
+    courseId: number,
+    status: InstructorCourseStatus,
+  ): Promise<any> {
+    const instructor_course = await this.getInstructorCourse(userId, courseId);
+    instructor_course.instructor_course_status = status;
+
+    await this.instructor_courseRepository.save(instructor_course);
+    return instructor_course;
   }
 }
