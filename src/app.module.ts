@@ -11,6 +11,8 @@ import { UsersModule } from './users/users.module';
 import { CoursesModule } from './courses/courses.module';
 import { RolesModule } from './roles/roles.module';
 import { LessonsModule } from './lessons/lessons.module';
+import { QuizzesModule } from './quizzes/quizzes.module';
+import { QuestionsModule } from './questions/questions.module';
 
 @Module({
   imports: [
@@ -31,6 +33,8 @@ import { LessonsModule } from './lessons/lessons.module';
     CoursesModule,
     RolesModule,
     LessonsModule,
+    QuizzesModule,
+    QuestionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

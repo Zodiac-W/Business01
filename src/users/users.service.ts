@@ -21,6 +21,13 @@ import { InstructorCourseStatus } from './enums/instructor-course-status.enum';
 import { Instructor_lesson } from './entities/instructor-lesson.entity';
 import { CreateLessonDto } from 'src/lessons/dto/create-lesson-dto';
 import { InstructorLessonStatus } from './enums/instructor-lesson-status.enum';
+import { Student_quiz } from './entities/student-quiz.entity';
+import { QuizzesService } from 'src/quizzes/quizzes.service';
+import { CreateStudentQuizDto } from './dto/create-student-quiz-dto';
+import { UpdateStudentQuizDto } from './dto/update-student-quiz-dto';
+import { Student_quiz_question } from './entities/student-quiz-question.entity';
+import { QuestionsService } from 'src/questions/questions.service';
+import { CreateStudentQuizQuestionDto } from './dto/create-student-quiz-question-dto';
 
 @Injectable()
 export class UsersService {
@@ -47,6 +54,14 @@ export class UsersService {
 
     @InjectRepository(Instructor_lesson)
     private instructor_lessonRepository: Repository<Instructor_lesson>,
+
+    @InjectRepository(Student_quiz)
+    private student_quizRepository: Repository<Student_quiz>,
+    private quizzesService: QuizzesService,
+
+    @InjectRepository(Student_quiz_question)
+    private student_quiz_questionRepository: Repository<Student_quiz_question>,
+    private questionsServce: QuestionsService,
   ) {}
 
   async signupUser(createUserDto: CreateUserDto): Promise<any> {
@@ -185,7 +200,6 @@ export class UsersService {
    * USER - NICKNAME
    *
    */
-
   async setUserNickname(nickname: string, id: number): Promise<any> {
     const user = await this.getUser(id);
 
@@ -227,7 +241,6 @@ export class UsersService {
    * USER - ROLE
    *
    */
-
   async setUserRole(userId: number, roleId: number): Promise<any> {
     const user = await this.getUser(userId);
     const role = await this.roleService.getRole(roleId);
@@ -266,13 +279,11 @@ export class UsersService {
     const user_role = await this.setUserRole(userId, roleId);
     return user_role;
   }
-
   /**
    *
    * STUDENT - COURSE
    *
    */
-
   async getStudentCourses(id: number): Promise<any> {
     const user = await this.usersRepository.findOne({
       where: { id },
@@ -332,13 +343,11 @@ export class UsersService {
     await this.student_courseRepository.save(student_course);
     return student_course;
   }
-
   /**
    *
    * INSTRUCTOR - COURSE
    *
    */
-
   async getInstructorCourses(id: number): Promise<any> {
     const user = await this.usersRepository.findOne({
       where: { id },
@@ -392,13 +401,11 @@ export class UsersService {
     await this.instructor_courseRepository.save(instructor_course);
     return instructor_course;
   }
-
   /**
    *
    * STUDENT - LESSON
    *
    */
-
   async getStudentLessons(id: number): Promise<any> {
     const user = await this.usersRepository.findOne({
       where: { id },
@@ -458,13 +465,16 @@ export class UsersService {
     await this.student_lessonRepository.save(student_lesson);
     return student_lesson;
   }
-
   /**
    *
    * INSTRUCTOR - LESSON
+   * GET ALL INSTRUCTOR LESSONS
+   * GET ONE INSTRUCTOR LESSON
+   * SET INSTRUCTOR LESON
+   * DELETE INSTRUCTOR LESSON
+   * UPDATE INSTRUCTOR LESSON
    *
    */
-
   async getInstructorLessons(id: number): Promise<any> {
     const user = await this.usersRepository.findOne({
       where: { id },
@@ -517,5 +527,261 @@ export class UsersService {
 
     await this.instructor_lessonRepository.save(instructor_lesson);
     return instructor_lesson;
+  }
+  /**
+   *
+   * STUDENT - QUIZ
+   * GET ALL
+   * GET ONE
+   * GET ONE BY STUDENT_QUIZ ID
+   * SET STUDENT QUIZ
+   * DELETE STUDENT QUIZ
+   *
+   */
+  async getStudentQuizzes(studentId: number): Promise<any> {
+    const student_quiz = await this.student_quizRepository.find({
+      where: { user: { id: studentId } },
+      relations: ['quiz', 'quiz.quiz_question', 'quiz.quiz_question.question'],
+    });
+
+    try {
+      if (student_quiz.length < 1) {
+        return { message: "This student didn't take any quiz" };
+      }
+      return student_quiz;
+    } catch (err) {
+      return { message: err.message };
+    }
+  }
+
+  async getStudentQuiz(studentId: number, quizId: number): Promise<any> {
+    let student_quiz: any;
+    try {
+      student_quiz = await this.student_quizRepository.findOne({
+        where: { user: { id: studentId }, quiz: { id: quizId } },
+        relations: [
+          'quiz',
+          'quiz.quiz_question',
+          'quiz.quiz_question.question',
+        ],
+        order: { id: 'DESC' },
+      });
+
+      if (!student_quiz) {
+        return { message: "The student didn't take this quiz" };
+      }
+      return student_quiz;
+    } catch (err) {
+      return { message: err.message };
+    }
+  }
+
+  async getStudentQuizById(id: number): Promise<any> {
+    const student_quiz = await this.student_quizRepository.findOne({
+      where: { id },
+    });
+
+    if (!student_quiz) {
+      return { message: "The student didn't take this quiz" };
+    }
+    return student_quiz;
+  }
+
+  async setStudentQuiz(
+    createStudentQuizDto: CreateStudentQuizDto,
+  ): Promise<any> {
+    const {
+      student_id,
+      quiz_id,
+      student_quiz_score,
+      student_quiz_status,
+      student_quiz_reviewed,
+    } = createStudentQuizDto;
+
+    let user: any;
+    let quiz: any;
+    try {
+      user = await this.getUser(student_id);
+      quiz = await this.quizzesService.getQuiz(quiz_id);
+    } catch (err) {
+      return { message: err.message };
+    }
+
+    const student_quiz = new Student_quiz();
+    student_quiz.user = user;
+    student_quiz.quiz = quiz;
+    student_quiz.student_quiz_score = student_quiz_score;
+    student_quiz.student_quiz_status = student_quiz_status;
+    student_quiz.student_quiz_reviewed = student_quiz_reviewed;
+
+    await this.student_quizRepository.save(student_quiz);
+    return student_quiz;
+  }
+
+  async deleteStudentQuiz(userId: number, quizId: number): Promise<any> {
+    const student_quiz = await this.getStudentQuiz(userId, quizId);
+
+    await this.student_quizRepository.softDelete(student_quiz.id);
+    return student_quiz;
+  }
+
+  async updateStudentQuiz(
+    userId: number,
+    updateStudentQuizDto: UpdateStudentQuizDto,
+  ): Promise<any> {
+    const { quiz_id } = updateStudentQuizDto;
+    let student_quiz = await this.getStudentQuiz(userId, quiz_id);
+    student_quiz = { ...student_quiz, ...updateStudentQuizDto };
+
+    await this.student_quizRepository.save(student_quiz);
+    return student_quiz;
+  }
+  /**
+   *
+   * STUDENT - QUIZ - QUESTION
+   * GET ALL
+   * GET ONE
+   * SET STUDENT QUIZ
+   * DELETE STUDENT QUIZ
+   *
+   */
+  async getStudentQuizQuestions(student_quiz_id: number): Promise<any> {
+    const student_quiz_questions =
+      await this.student_quiz_questionRepository.find({
+        where: { student_quiz: { id: student_quiz_id } },
+        relations: ['question'],
+      });
+
+    try {
+      if (student_quiz_questions.length < 1) {
+        return { message: "This student didn't answer any question yet" };
+      }
+      return student_quiz_questions;
+    } catch (err) {
+      return { message: err.message };
+    }
+  }
+
+  async getStudentQuizQuestion(
+    student_quiz_id: number,
+    question_id: number,
+  ): Promise<any> {
+    try {
+      const student_quiz_question =
+        await this.student_quiz_questionRepository.findOne({
+          where: {
+            student_quiz: { id: student_quiz_id },
+            question: { id: question_id },
+          },
+          relations: ['question'],
+          order: { id: 'DESC' },
+        });
+
+      if (!student_quiz_question) {
+        return {
+          message: "The student didn't answer this question in this quiz",
+        };
+      }
+      return student_quiz_question;
+    } catch (err) {
+      return { message: err.message };
+    }
+  }
+
+  async setStudentQuizQuestion(
+    createStudentQuizQuestionDto: CreateStudentQuizQuestionDto,
+  ): Promise<any> {
+    let {
+      student_quiz_id,
+      question_id,
+      answer_id,
+      student_quiz_question_answer_txt,
+      student_quiz_question_is_correct,
+    } = createStudentQuizQuestionDto;
+
+    const exist = await this.getStudentQuizQuestion(
+      student_quiz_id,
+      question_id,
+    );
+    if (!exist.message) {
+      return {
+        message: 'The answer to this question has already been submitted',
+      };
+    }
+
+    try {
+      const student_quiz = await this.getStudentQuizById(student_quiz_id);
+      const question = await this.questionsServce.getQuestion(question_id);
+      const answer = await this.questionsServce.getAnswer(answer_id);
+
+      if (question.question_type !== 'short answer') {
+        console.log(1);
+        const checkAnswer = await this.questionsServce.checkQuestionAnswer(
+          question.id,
+          answer.id,
+        );
+        const is_correct = checkAnswer[0].answer_is_correct;
+        console.log(is_correct);
+        if (is_correct === null) {
+          console.log(2);
+          student_quiz_question_is_correct = null;
+        } else {
+          console.log(is_correct);
+          if (is_correct) {
+            student_quiz.student_quiz_score += question.question_score;
+            await this.student_quizRepository.save(student_quiz);
+          }
+          student_quiz_question_is_correct = is_correct;
+        }
+      }
+
+      const student_quiz_question = new Student_quiz_question();
+      student_quiz_question.student_quiz = student_quiz;
+      student_quiz_question.question = question;
+      student_quiz_question.answer = answer;
+
+      student_quiz_question.student_quiz_question_answer_txt =
+        student_quiz_question_answer_txt;
+      student_quiz_question.student_quiz_question_is_correct =
+        student_quiz_question_is_correct;
+
+      await this.student_quiz_questionRepository.save(student_quiz_question);
+      return student_quiz_question;
+    } catch (err) {
+      return { message: err.message };
+    }
+  }
+
+  async deleteStudentQuizQuestion(
+    student_quiz_id: number,
+    question_id: number,
+  ): Promise<any> {
+    const student_quiz_question = await this.getStudentQuizQuestion(
+      student_quiz_id,
+      question_id,
+    );
+
+    if (student_quiz_question.message) {
+      return student_quiz_question;
+    }
+
+    await this.student_quiz_questionRepository.softDelete(
+      student_quiz_question.id,
+    );
+    return student_quiz_question;
+  }
+
+  async updateStudentQuizQuestion(
+    student_quiz_id: number,
+    question_id: number,
+  ): Promise<any> {
+    const student_quiz_question = await this.getStudentQuizQuestion(
+      student_quiz_id,
+      question_id,
+    );
+
+    if (student_quiz_question.message) {
+      return student_quiz_question;
+    }
   }
 }

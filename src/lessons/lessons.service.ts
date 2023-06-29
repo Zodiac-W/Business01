@@ -12,6 +12,7 @@ export class LessonsService {
   constructor(
     @InjectRepository(Lesson)
     private lessonRepository: Repository<Lesson>,
+
     @InjectRepository(Lesson_meta)
     private lesson_metaRepository: Repository<Lesson_meta>,
 

@@ -6,11 +6,19 @@ import { Course_meta } from 'src/courses/entities/course-meta.entity';
 import { Course } from 'src/courses/entities/course.entity';
 import { Lesson_meta } from 'src/lessons/entities/lesson-meta.entity';
 import { Lesson } from 'src/lessons/entities/lesson.entity';
+import { Answer } from 'src/questions/entities/answer.entity';
+import { Question_meta } from 'src/questions/entities/question-meta.entity';
+import { Question } from 'src/questions/entities/question.entity';
+import { Quiz_meta } from 'src/quizzes/entities/quiz-meta.entity';
+import { Quiz_question } from 'src/quizzes/entities/quiz-question.entity';
+import { Quiz } from 'src/quizzes/entities/quiz.entity';
 import { Role } from 'src/roles/entities/role.entity';
 import { Instructor_course } from 'src/users/entities/instructor-course.entity';
 import { Instructor_lesson } from 'src/users/entities/instructor-lesson.entity';
 import { Student_course } from 'src/users/entities/student-course.entity';
 import { Student_lesson } from 'src/users/entities/student-lesson.entity';
+import { Student_quiz_question } from 'src/users/entities/student-quiz-question.entity';
+import { Student_quiz } from 'src/users/entities/student-quiz.entity';
 import { User_meta } from 'src/users/entities/user-meta.entity';
 import { User_role } from 'src/users/entities/user-role.entity';
 import { User } from 'src/users/entities/user.entity';
@@ -42,6 +50,14 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         Student_course,
         Instructor_course,
         Instructor_lesson,
+        Quiz,
+        Quiz_meta,
+        Question,
+        Question_meta,
+        Answer,
+        Quiz_question,
+        Student_quiz,
+        Student_quiz_question,
       ],
       migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
       cli: {

@@ -12,6 +12,10 @@ import { User_role } from './entities/user-role.entity';
 import { User } from './entities/user.entity';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
+import { Student_quiz } from './entities/student-quiz.entity';
+import { QuizzesModule } from 'src/quizzes/quizzes.module';
+import { QuestionsModule } from 'src/questions/questions.module';
+import { Student_quiz_question } from './entities/student-quiz-question.entity';
 
 @Module({
   imports: [
@@ -23,10 +27,15 @@ import { UsersService } from './users.service';
       Student_course,
       Instructor_course,
       Instructor_lesson,
+      Student_quiz,
+      Student_quiz_question,
     ]),
     RolesModule,
     LessonsModule,
     CoursesModule,
+    QuizzesModule,
+    QuestionsModule,
+    Student_quiz_question,
   ],
   controllers: [UsersController],
   providers: [UsersService],

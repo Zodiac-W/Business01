@@ -14,6 +14,7 @@ import { Student_course } from './student-course.entity';
 import { Student_lesson } from './student-lesson.entity';
 import { User_meta } from './user-meta.entity';
 import { User_role } from './user-role.entity';
+import { Student_quiz } from './student-quiz.entity';
 
 @Entity()
 export class User {
@@ -67,4 +68,7 @@ export class User {
     (instructor_lesson) => instructor_lesson.user,
   )
   instructor_lesson: Instructor_lesson[];
+
+  @OneToMany((type) => Student_quiz, (student_quiz) => student_quiz.user)
+  student_quiz: Student_quiz;
 }

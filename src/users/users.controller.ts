@@ -30,6 +30,9 @@ import { StudentLessonStatus } from './enums/student-lesson-status.enum';
 import { Student } from './guards/student.guard';
 import { Teacher } from './guards/teacher.guard';
 import { UsersService } from './users.service';
+import { CreateStudentQuizDto } from './dto/create-student-quiz-dto';
+import { UpdateStudentQuizDto } from './dto/update-student-quiz-dto';
+import { CreateStudentQuizQuestionDto } from './dto/create-student-quiz-question-dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -1054,7 +1057,272 @@ export class UsersController {
    *  GET ONE
    *  SET ONE
    *  DELETE ONE
-   *  UPDATE ONE STATUS
+   *  UPDATE ONE
    *
    */
+  @ApiOperation({ summary: "Get all student's quizzes" })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected user id',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of all student quizzes',
+    type: [CreateStudentQuizDto],
+  })
+  @UseGuards(JwtAuthGuard)
+  @Get('/quizzes/all/:id')
+  getStudentQuizzes(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getStudentQuizzes(id);
+  }
+
+  @ApiOperation({ summary: 'Get one student quiz' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected user id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        quizId: {
+          type: 'integer',
+          example: 4,
+          description: 'The selected quiz id',
+        },
+      },
+    },
+    description: 'The quiz id',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The selected student quiz data',
+    type: CreateStudentQuizDto,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('/quizzes/one/:id')
+  getStudentQuiz(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('quizId') quizId: number,
+  ) {
+    return this.usersService.getStudentQuiz(id, quizId);
+  }
+
+  @ApiOperation({ summary: 'Set student quiz' })
+  @ApiBearerAuth()
+  @ApiBody({
+    schema: {
+      type: 'CreateStudentQuizDto',
+    },
+    description: 'The student quiz data',
+    required: true,
+    type: CreateStudentQuizDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The student quiz data',
+    type: CreateStudentQuizDto,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('/quizzes/set')
+  setStudentQuiz(@Body() createStudentQuizDto: CreateStudentQuizDto) {
+    return this.usersService.setStudentQuiz(createStudentQuizDto);
+  }
+
+  @ApiOperation({ summary: 'Delete student quiz' })
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected user id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        quizId: {
+          type: 'number',
+          example: 4,
+          description: 'The selected quiz id',
+        },
+      },
+    },
+    description: 'The quiz id',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The deleted student quiz data',
+    type: CreateStudentQuizDto,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Delete('/quizzes/delete/:id')
+  deleteStudentQuiz(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('quizId') quizId: number,
+  ) {
+    return this.usersService.deleteStudentQuiz(id, quizId);
+  }
+
+  @ApiOperation({ summary: 'Update the student quiz' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected user id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'UpdateStudentQuizDto',
+    },
+    description: 'The fields we want to update in the student quiz data',
+    required: true,
+    type: UpdateStudentQuizDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The updated studen quiz data',
+    type: CreateStudentQuizDto,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Put('/quizzes/update/:id')
+  updateStudentQuiz(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateStudentQuizDto: UpdateStudentQuizDto,
+  ) {
+    return this.usersService.updateStudentQuiz(id, updateStudentQuizDto);
+  }
+  /**
+   *
+   *  STUDENT - QUIZ - QUESTION
+   *  GET ALL
+   *  GET ONE
+   *  SET ONE
+   *  DELETE ONE
+   *  UPDATE ONE
+   *
+   */
+  @ApiOperation({ summary: 'Get all student quiz question answers' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'number',
+    example: 2,
+    description: 'The selected student quiz id',
+  })
+  @ApiResponse({
+    status: 200,
+    description:
+      'The student quiz question answers data along with the question data',
+    type: [Object],
+  })
+  @UseGuards(JwtAuthGuard)
+  @Get('/quizzes/questions/all/:id')
+  getStudentQuizQuestions(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getStudentQuizQuestions(id);
+  }
+
+  @ApiOperation({ summary: 'GEt one student quiz question answer' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected student quiz id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        question_id: {
+          type: 'number',
+          example: 4,
+          description: 'The selected question id',
+        },
+      },
+    },
+    description: 'The question id',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The student quiz question answer data',
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('/quizzes/questions/one/:id')
+  getStudentQuizQuestion(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('question_id') question_id: number,
+  ) {
+    return this.usersService.getStudentQuizQuestion(id, question_id);
+  }
+
+  @ApiOperation({ summary: 'Set student quiz question answer' })
+  @ApiBearerAuth()
+  @ApiBody({
+    schema: {
+      type: 'CreateStudentQuizQuestionDto',
+    },
+    description: 'The student quiz question data',
+    required: true,
+    type: CreateStudentQuizQuestionDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The student quiz question data',
+    type: CreateStudentQuizQuestionDto,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('/quizzes/questions/new/')
+  setStudentQuizQuestion(
+    @Body() createStudentQuizQuestionDto: CreateStudentQuizQuestionDto,
+  ) {
+    return this.usersService.setStudentQuizQuestion(
+      createStudentQuizQuestionDto,
+    );
+  }
+
+  @ApiOperation({ summary: 'Delete Student quiz question answer' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected student quiz id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        question_id: {
+          type: 'number',
+          example: 4,
+          description: 'The selected question id',
+        },
+      },
+    },
+    description: 'The question id',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The deleted student quiz question data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Delete('/quizzes/questions/delete/:id')
+  deleteStudentQuizQuestion(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('question_id') question_id: number,
+  ) {
+    return this.usersService.deleteStudentQuizQuestion(id, question_id);
+  }
 }

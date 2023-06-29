@@ -35,7 +35,7 @@ export class CreateUserDto {
     description: 'The user phone number',
     type: String,
   })
-  @IsNotEmpty()
+  @IsOptional()
   user_phone: string;
 
   @ApiProperty({
