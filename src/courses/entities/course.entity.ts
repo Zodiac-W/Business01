@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { Course_lesson } from './course-lesson.entity';
 import { Course_meta } from './course-meta.entity';
+import { Course_quiz } from './course-quiz.entity';
 
 @Entity()
 export class Course {
@@ -51,4 +52,7 @@ export class Course {
     (instructor_course) => instructor_course.course,
   )
   instructor_course: Instructor_course[];
+
+  @OneToMany((type) => Course_quiz, (course_quiz) => course_quiz.course)
+  course_quiz: Course_quiz[];
 }

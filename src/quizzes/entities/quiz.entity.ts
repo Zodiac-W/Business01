@@ -9,6 +9,7 @@ import {
 import { Quiz_meta } from './quiz-meta.entity';
 import { Quiz_question } from './quiz-question.entity';
 import { Student_quiz } from 'src/users/entities/student-quiz.entity';
+import { Course_quiz } from 'src/courses/entities/course-quiz.entity';
 
 @Entity()
 export class Quiz {
@@ -38,4 +39,7 @@ export class Quiz {
 
   @OneToMany((type) => Student_quiz, (student_quiz) => student_quiz.quiz)
   student_quiz: Student_quiz[];
+
+  @OneToMany((type) => Course_quiz, (course_quiz) => course_quiz.quiz)
+  course_quiz: Course_quiz[];
 }

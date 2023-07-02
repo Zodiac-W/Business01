@@ -9,21 +9,40 @@ import { UpdateCourseDto } from './dto/update-course-dto';
 import { Course_lesson } from './entities/course-lesson.entity';
 import { Course_meta } from './entities/course-meta.entity';
 import { Course } from './entities/course.entity';
+import { Course_quiz } from './entities/course-quiz.entity';
+import { QuizzesService } from 'src/quizzes/quizzes.service';
 
 @Injectable()
 export class CoursesService {
   constructor(
     @InjectRepository(Course)
     private courseRepository: Repository<Course>,
+
     @InjectRepository(Course_meta)
     private course_metaRepository: Repository<Course_meta>,
+
     @InjectRepository(Course_lesson)
     private course_lessonRepository: Repository<Course_lesson>,
     private lessonsService: LessonsService,
+
     @InjectRepository(Instructor_course)
     private instructor_courseRepository: Repository<Instructor_course>,
-  ) {}
 
+    @InjectRepository(Course_quiz)
+    private course_quizRepository: Repository<Course_quiz>,
+    private quizzesService: QuizzesService,
+  ) {}
+  /**
+   *
+   * COURSE
+   * GET ALL
+   * GET ONE
+   * GET ALL TITLES
+   * SET COURSE
+   * DELETE COURSE
+   * UPDATE COURSE
+   *
+   */
   async createCourse(createCourseDto: CreateCourseDto): Promise<any> {
     const { course_title, course_description, course_duration, course_status } =
       createCourseDto;
@@ -79,7 +98,13 @@ export class CoursesService {
     await this.courseRepository.save(course);
     return course;
   }
-
+  /**
+   *
+   * COURSE
+   * SET COURSE ROUNDS
+   * GET COURSE ROUNDS
+   *
+   */
   async setCourseRounds(id: number, round: number): Promise<any> {
     const course = await this.getCourse(id);
 
@@ -116,7 +141,13 @@ export class CoursesService {
     const currentRound = rounds[rounds.length - 1];
     return { rounds: currentRound };
   }
-
+  /**
+   *
+   * COURSE
+   * GET COURSE META
+   * SET COURSE META
+   *
+   */
   async getCourseMeta(id: number): Promise<any> {
     const course = await this.courseRepository.findOne({
       where: { id },
@@ -138,20 +169,56 @@ export class CoursesService {
     await this.course_metaRepository.save(course_meta);
     return course_meta;
   }
-
-  async getCourseLesson(id: number): Promise<any> {
-    const course = await this.courseRepository.findOne({
-      where: { id },
-      relations: ['course_lesson', 'course_lesson.lesson'],
+  /**
+   *
+   * COURSE - LESSON
+   * GET ONE COURSE LESSON
+   * SET COURSE LESSON
+   * CREATE NEW LESSON AND SET IT TO COURSE
+   * DELETE COURSE LESSON
+   * UPDATE COURSE LESSON
+   *
+   */
+  async getCourseLessons(id: number): Promise<any> {
+    const course_lessons = await this.course_lessonRepository.find({
+      where: { course: { id } },
+      relations: ['course', 'lesson'],
     });
 
-    const lessons = course.course_lesson;
-    return lessons;
+    try {
+      if (course_lessons.length < 1) {
+        return { message: "This course doesn't have lessons" };
+      }
+      return course_lessons;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
 
-  async setCourseLesson(courseId: number, lessonId: number): Promise<any> {
-    const course = await this.getCourse(courseId);
-    const lesson = await this.lessonsService.getLesson(lessonId);
+  async getCourseLesson(course_id: number, lesson_id: number): Promise<any> {
+    try {
+      const course_lesson = await this.course_lessonRepository.findOne({
+        where: {
+          course: { id: course_id },
+          lesson: { id: lesson_id },
+        },
+        relations: ['course', 'lesson'],
+        order: { id: 'DESC' },
+      });
+
+      if (!course_lesson) {
+        return { message: "This lesson doesn't exist in this course" };
+      }
+
+      return course_lesson;
+    } catch (err) {
+      return { message: err.message };
+    }
+  }
+
+  async setCourseLesson(course_id: number, lesson_id: number): Promise<any> {
+    const course = await this.getCourse(course_id);
+    const lesson = await this.lessonsService.getLesson(lesson_id);
 
     const course_lesson = new Course_lesson();
     course_lesson.course = course;
@@ -176,6 +243,41 @@ export class CoursesService {
     return course_lesson;
   }
 
+  async deleteCourseLesson(course_id: number, lesson_id: number): Promise<any> {
+    const course_lesson = await this.getCourseLesson(course_id, lesson_id);
+
+    if (course_lesson.message) {
+      return course_lesson;
+    }
+
+    await this.course_lessonRepository.softDelete(course_lesson.id);
+    return course_lesson;
+  }
+
+  async updateCourseLesson(
+    course_id: number,
+    lesson_id_old: number,
+    lesson_id_new: number,
+  ): Promise<any> {
+    const course_lesson = await this.getCourseLesson(course_id, lesson_id_old);
+
+    if (course_lesson.message) {
+      return course_lesson;
+    }
+
+    await this.deleteCourseLesson(course_id, lesson_id_old);
+    const new_course_lesson = await this.setCourseLesson(
+      course_id,
+      lesson_id_new,
+    );
+    return new_course_lesson;
+  }
+  /**
+   *
+   * COURSE - LESSON
+   * GET COURSE INSTRUCTOR
+   *
+   */
   async getCourseInstructor(id: number): Promise<any> {
     const course = await this.courseRepository.findOne({
       where: { id },
@@ -194,5 +296,90 @@ export class CoursesService {
       return { message: 'SUPERUSER' };
     }
     return instructor;
+  }
+  /**
+   *
+   * COURSE - QUIZ
+   * GET ALL COURSE QUIZZES
+   * GET ONE COURSE QUIZ
+   * SET COURSE QUIZ
+   * DELETE COURSE QUIZ
+   * UPDATE COURSE QUIZ
+   *
+   */
+  async getCourseQuizzes(course_id: number): Promise<any> {
+    try {
+      const course_quizzes = await this.course_quizRepository.find({
+        where: { course: { id: course_id } },
+        relations: ['course', 'quiz'],
+      });
+
+      if (course_quizzes.length < 1) {
+        return { message: "This course doesn't have any quizzes" };
+      }
+      return course_quizzes;
+    } catch (err) {
+      return { message: err.message };
+    }
+  }
+
+  async getCourseQuiz(course_id: number, quiz_id: number): Promise<any> {
+    try {
+      const course_quiz = await this.course_quizRepository.findOne({
+        where: {
+          course: { id: course_id },
+          quiz: { id: quiz_id },
+        },
+        relations: ['course', 'quiz'],
+        order: { id: 'DESC' },
+      });
+
+      if (!course_quiz) {
+        return { message: "This course doesn't have this quiz" };
+      }
+
+      return course_quiz;
+    } catch (err) {
+      return { message: err.message };
+    }
+  }
+
+  async setCourseQuiz(course_id: number, quiz_id: number): Promise<any> {
+    const course = await this.getCourse(course_id);
+    const quiz = await this.quizzesService.getQuiz(quiz_id);
+
+    const course_quiz = new Course_quiz();
+    course_quiz.course = course;
+    course_quiz.quiz = quiz;
+
+    await this.course_quizRepository.save(course_quiz);
+    return course_quiz;
+  }
+
+  async deleteCourseQuiz(course_id: number, quiz_id: number): Promise<any> {
+    const course_quiz = await this.getCourseQuiz(course_id, quiz_id);
+
+    if (course_quiz.message) {
+      return course_quiz;
+    }
+
+    await this.course_quizRepository.softDelete(course_quiz.id);
+    return course_quiz;
+  }
+
+  async updateCourseQuiz(
+    course_id: number,
+    quiz_id_old: number,
+    quiz_id_new: number,
+  ): Promise<any> {
+    const course_quiz = await this.getCourseQuiz(course_id, quiz_id_old);
+
+    if (course_quiz.message) {
+      return course_quiz;
+    }
+
+    await this.deleteCourseQuiz(course_id, quiz_id_old);
+    const new_course_quiz = await this.setCourseQuiz(course_id, quiz_id_new);
+    return new_course_quiz;
   }
 }

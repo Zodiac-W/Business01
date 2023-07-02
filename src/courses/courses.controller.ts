@@ -27,7 +27,17 @@ import { UpdateCourseDto } from './dto/update-course-dto';
 @Controller('courses')
 export class CoursesController {
   constructor(private coursesService: CoursesService) {}
-
+  /**
+   *
+   *  COURSE
+   *  GET ALL COURSES
+   *  GET ALL COURSES' TITLES
+   *  GET ONE COURSE
+   *  SET COURSE
+   *  DELETE COURSE
+   *  UPDATE COURSE
+   *
+   */
   @ApiOperation({ summary: 'Get all courses' })
   @ApiBearerAuth()
   @ApiResponse({
@@ -139,7 +149,13 @@ export class CoursesController {
   ) {
     return this.coursesService.updateCourse(id, updateCourseDto);
   }
-
+  /**
+   *
+   *  COURSE
+   *  GET COURSE ROUNDS
+   *  SET COURSE ROUNDS
+   *
+   */
   @ApiOperation({ summary: 'Get total course rounds' })
   @ApiBearerAuth()
   @ApiParam({
@@ -195,7 +211,13 @@ export class CoursesController {
   ) {
     return this.coursesService.setCourseRounds(id, round);
   }
-
+  /**
+   *
+   *  COURSE
+   *  GET COURSE META
+   *  SET COURSE META
+   *
+   */
   @ApiOperation({ summary: 'Get all course meta data' })
   @ApiBearerAuth()
   @ApiParam({
@@ -253,23 +275,70 @@ export class CoursesController {
   ) {
     return this.coursesService.setCourseMeta(id, key, value);
   }
-
-  @ApiOperation({ summary: "Get course's lessons" })
+  /**
+   *
+   * COURSE - LESSON
+   * GET ALL COURSE LESSONS
+   * GET ONE COURSE LESSON
+   * SET COURSE LESSON
+   * CREATE NEW LESSON AND SET IT TO COURSE
+   * DELETE COURSE LESSON
+   * UPDATE COURSE LESSON
+   *
+   */
+  @ApiOperation({ summary: "Get all course's lessons" })
   @ApiBearerAuth()
   @ApiParam({
     name: 'id',
     type: 'integer',
-    description: 'The id of the selected course',
+    example: 2,
+    description: 'The selected course id',
   })
   @ApiResponse({
     status: 200,
-    description: "The course list of lessons' data",
+    description: "List of course's lessons",
     type: [Object],
   })
   @UseGuards(JwtAuthGuard)
-  @Get('/lesson/:id')
-  getCourseLesson(@Param('id', ParseIntPipe) id: number) {
-    return this.coursesService.getCourseLesson(id);
+  @Get('/lessons/all/:id')
+  getCourseLessons(@Param('id', ParseIntPipe) id: number) {
+    return this.coursesService.getCourseLessons(id);
+  }
+
+  @ApiOperation({ summary: 'Get one course lesson' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected course id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        lesson_id: {
+          type: 'number',
+          example: 4,
+          description: 'The selected lesson id',
+        },
+      },
+    },
+    description: 'The lesson id',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: "The course lesson's data",
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('/lesson/one/:id')
+  getCourseLesson(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('lesson_id') lesson_id: number,
+  ) {
+    return this.coursesService.getCourseLesson(id, lesson_id);
   }
 
   @ApiOperation({ summary: 'Set course lesson' })
@@ -331,11 +400,276 @@ export class CoursesController {
     return this.coursesService.createCourseLesson(id, createLessonDto);
   }
 
+  @ApiOperation({ summary: 'Delete course lesson' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected course id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        lesson_id: {
+          type: 'number',
+          example: 4,
+          description: 'The selected lesson id',
+        },
+      },
+    },
+    description: 'The lesson id',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The deleted course lesson data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Delete('/lessons/delete/:id')
+  deleteCourseLesson(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('lesson_id') lesson_id: number,
+  ) {
+    return this.coursesService.deleteCourseLesson(id, lesson_id);
+  }
+
+  @ApiOperation({ summary: 'Update course lesson' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected course id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        lesson_id_old: {
+          type: 'number',
+          example: 4,
+          description: 'The old lesson id',
+        },
+        lesson_id_new: {
+          type: 'name',
+          example: 6,
+          description: 'The new lesson id',
+        },
+      },
+    },
+    description: 'The old & new lessons ids',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The new course lesson data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Put('lessons/update/:id')
+  updateCourseLesson(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('lesson_id_old') lesson_id_old: number,
+    @Body('lesson_id_new') lesson_id_new: number,
+  ) {
+    return this.coursesService.updateCourseLesson(
+      id,
+      lesson_id_old,
+      lesson_id_new,
+    );
+  }
+  /**
+   *
+   *  COURSE
+   *  GET COURSE'S INSTRUCTOR
+   *
+   */
   @ApiOperation({ summary: "Get the course's instructor" })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('/instructor/:id')
   getCourseInstructor(@Param('id', ParseIntPipe) id: number) {
     return this.coursesService.getCourseInstructor(id);
+  }
+  /**
+   *
+   * COURSE - QUIZ
+   * GET ALL COURSE QUIZZES
+   * GET ONE COURSE QUIZ
+   * SET COURSE QUIZ
+   * DELETE COURSE QUIZ
+   * UPDATE COURSE QUIZ
+   *
+   */
+
+  @ApiOperation({ summary: 'Get all course quizzes' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected course id',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of all course quizzes',
+    type: [Object],
+  })
+  @UseGuards(JwtAuthGuard)
+  @Get('/quizzes/all/:id')
+  getCourseQuizzes(@Param('id', ParseIntPipe) id: number) {
+    return this.coursesService.getCourseQuizzes(id);
+  }
+
+  @ApiOperation({ summary: 'Get one course quiz' })
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected course id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        quiz_id: {
+          type: 'number',
+          example: 4,
+          description: 'The selected quiz id',
+        },
+      },
+    },
+    description: 'The quiz id',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The course quiz data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('/quizzes/one/:id')
+  getCourseQuiz(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('quiz_id') quiz_id: number,
+  ) {
+    return this.coursesService.getCourseQuiz(id, quiz_id);
+  }
+
+  @ApiOperation({ summary: 'Set course quiz' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected course id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        quiz_id: {
+          type: 'number',
+          example: 4,
+          description: 'The selected quiz id',
+        },
+      },
+    },
+    description: 'The quiz id',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The new course quiz data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('/quizzes/new/:id')
+  setCourseQuiz(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('quiz_id') quiz_id: number,
+  ) {
+    return this.coursesService.setCourseQuiz(id, quiz_id);
+  }
+
+  @ApiOperation({ summary: 'Delete course quiz' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected course id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        quiz_id: {
+          type: 'number',
+          example: 4,
+          description: 'The selected quiz id',
+        },
+      },
+    },
+    description: 'The quiz id',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The deleted course quiz data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Delete('/quizzes/delete/:id')
+  deleteCourseQuiz(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('quiz_id') quiz_id: number,
+  ) {
+    return this.coursesService.deleteCourseQuiz(id, quiz_id);
+  }
+
+  @ApiOperation({ summary: 'Update course quiz' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected course id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        quiz_id_old: {
+          type: 'number',
+          example: 4,
+          description: 'The old quiz id',
+        },
+        quiz_id_new: {
+          type: 'number',
+          example: 6,
+          description: 'The new quiz id',
+        },
+      },
+    },
+    description: 'The old & new quizzes ids',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The updated course quiz data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Put('/quizzes/update/:id')
+  updateCourseQuiz(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('quiz_id_old') quiz_id_old: number,
+    @Body('quiz_id_new') quiz_id_new: number,
+  ) {
+    return this.coursesService.updateCourseQuiz(id, quiz_id_old, quiz_id_new);
   }
 }

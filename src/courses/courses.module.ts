@@ -7,6 +7,8 @@ import { CoursesService } from './courses.service';
 import { Course_lesson } from './entities/course-lesson.entity';
 import { Course_meta } from './entities/course-meta.entity';
 import { Course } from './entities/course.entity';
+import { Course_quiz } from './entities/course-quiz.entity';
+import { QuizzesModule } from 'src/quizzes/quizzes.module';
 
 @Module({
   imports: [
@@ -15,8 +17,10 @@ import { Course } from './entities/course.entity';
       Course_meta,
       Course_lesson,
       Instructor_course,
+      Course_quiz,
     ]),
     LessonsModule,
+    QuizzesModule,
   ],
   controllers: [CoursesController],
   providers: [CoursesService],

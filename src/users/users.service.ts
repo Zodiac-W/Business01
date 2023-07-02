@@ -28,6 +28,9 @@ import { UpdateStudentQuizDto } from './dto/update-student-quiz-dto';
 import { Student_quiz_question } from './entities/student-quiz-question.entity';
 import { QuestionsService } from 'src/questions/questions.service';
 import { CreateStudentQuizQuestionDto } from './dto/create-student-quiz-question-dto';
+import { UpdateStudentQuizQuestionDto } from './dto/update-student-quiz-question-dto';
+import { Question } from 'src/questions/entities/question.entity';
+import { Answer } from 'src/questions/entities/answer.entity';
 
 @Injectable()
 export class UsersService {
@@ -714,25 +717,16 @@ export class UsersService {
       const question = await this.questionsServce.getQuestion(question_id);
       const answer = await this.questionsServce.getAnswer(answer_id);
 
-      if (question.question_type !== 'short answer') {
-        console.log(1);
-        const checkAnswer = await this.questionsServce.checkQuestionAnswer(
-          question.id,
-          answer.id,
-        );
-        const is_correct = checkAnswer[0].answer_is_correct;
-        console.log(is_correct);
-        if (is_correct === null) {
-          console.log(2);
-          student_quiz_question_is_correct = null;
-        } else {
-          console.log(is_correct);
-          if (is_correct) {
-            student_quiz.student_quiz_score += question.question_score;
-            await this.student_quizRepository.save(student_quiz);
-          }
-          student_quiz_question_is_correct = is_correct;
-        }
+      const is_correct = await this.answerAutoReview(question, answer);
+
+      if (is_correct === null) {
+        student_quiz_question_is_correct = null;
+      } else if (is_correct === true) {
+        student_quiz_question_is_correct = true;
+        student_quiz.student_quiz_score += question.question_score;
+        await this.student_quizRepository.save(student_quiz);
+      } else if (is_correct === false) {
+        student_quiz_question_is_correct = false;
       }
 
       const student_quiz_question = new Student_quiz_question();
@@ -773,9 +767,10 @@ export class UsersService {
 
   async updateStudentQuizQuestion(
     student_quiz_id: number,
-    question_id: number,
+    updateStudentQuizQuestionDto: UpdateStudentQuizQuestionDto,
   ): Promise<any> {
-    const student_quiz_question = await this.getStudentQuizQuestion(
+    const { question_id } = updateStudentQuizQuestionDto;
+    let student_quiz_question = await this.getStudentQuizQuestion(
       student_quiz_id,
       question_id,
     );
@@ -783,5 +778,121 @@ export class UsersService {
     if (student_quiz_question.message) {
       return student_quiz_question;
     }
+    // HERE WE SHOULD CHECK IF THERE IS NEW ANSWER WE SHOULD
+    // TRY TO AUTO REVIEW IT
+    if (updateStudentQuizQuestionDto.answer_id) {
+      console.log('NEW ANSWER');
+    }
+
+    student_quiz_question = {
+      ...student_quiz_question,
+      ...updateStudentQuizQuestionDto,
+    };
+
+    await this.student_quiz_questionRepository.save(student_quiz_question);
+    return student_quiz_question;
+  }
+  /**
+   *
+   * STUDENT - QUIZ - QUESTION
+   * AUTO REVIEW STUDENT'S ANSWER
+   * GET ALL STUDENT QUIZ ANSWERS CORRECT OR NOT
+   * CHECK IF QUIZ IS REVIEWED
+   * GET STUDNET'S ANSWER'S TEXT
+   *
+   */
+  async answerAutoReview(question: Question, answer: Answer): Promise<any> {
+    console.log('ANSWER AUTO REVIEW');
+    if (question.question_type !== 'short answer') {
+      const checkAnswer = await this.questionsServce.checkQuestionAnswer(
+        question.id,
+        answer.id,
+      );
+      const is_correct = checkAnswer[0].answer_is_correct;
+
+      if (is_correct === null) {
+        console.log(is_correct);
+        return null;
+      } else if (is_correct) {
+        console.log(is_correct);
+        return true;
+      } else {
+        console.log(is_correct);
+        return false;
+      }
+    }
+    return null;
+  }
+
+  async checkIsCorrect(student_quiz_id: number): Promise<any> {
+    const student_quiz_question =
+      await this.student_quiz_questionRepository.find({
+        where: { student_quiz: { id: student_quiz_id } },
+        relations: ['question'],
+      });
+    const is_correct = student_quiz_question.map((item) => {
+      return {
+        question_title: item.question.question_txt,
+        is_correct: item.student_quiz_question_is_correct,
+      };
+    });
+    return is_correct;
+  }
+
+  async checkIsReviewed(student_quiz_id: number): Promise<any> {
+    const is_correct = await this.checkIsCorrect(student_quiz_id);
+
+    const not_reviewed = is_correct.find((item) => {
+      if (item.is_correct === null) {
+        return true;
+      }
+    });
+
+    let reviewed: boolean;
+    if (not_reviewed) {
+      reviewed = false;
+      return { reviewed };
+    } else {
+      reviewed = true;
+      return { reviewed };
+    }
+  }
+
+  async getStudentAnswer(
+    student_quiz_id: number,
+    question_id: number,
+  ): Promise<any> {
+    try {
+      const student_quiz_question =
+        await this.student_quiz_questionRepository.findOne({
+          where: {
+            student_quiz: { id: student_quiz_id },
+            question: { id: question_id },
+          },
+        });
+      const answer_txt = student_quiz_question.student_quiz_question_answer_txt;
+
+      return { answer_txt };
+    } catch (err) {
+      return { message: err.message };
+    }
+  }
+
+  async reviewAnswer(
+    student_quiz_id: number,
+    question_id: number,
+    is_correct: boolean,
+  ): Promise<any> {
+    const student_quiz_question =
+      await this.student_quiz_questionRepository.findOne({
+        where: {
+          student_quiz: { id: student_quiz_id },
+          question: { id: question_id },
+        },
+      });
+    student_quiz_question.student_quiz_question_is_correct = is_correct;
+
+    await this.student_quiz_questionRepository.save(student_quiz_question);
+    return student_quiz_question;
   }
 }

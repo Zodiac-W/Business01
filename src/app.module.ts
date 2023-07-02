@@ -13,6 +13,7 @@ import { RolesModule } from './roles/roles.module';
 import { LessonsModule } from './lessons/lessons.module';
 import { QuizzesModule } from './quizzes/quizzes.module';
 import { QuestionsModule } from './questions/questions.module';
+import { DiscusionModule } from './discusion/discusion.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { QuestionsModule } from './questions/questions.module';
     LessonsModule,
     QuizzesModule,
     QuestionsModule,
+    DiscusionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

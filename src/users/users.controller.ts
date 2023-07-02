@@ -33,6 +33,7 @@ import { UsersService } from './users.service';
 import { CreateStudentQuizDto } from './dto/create-student-quiz-dto';
 import { UpdateStudentQuizDto } from './dto/update-student-quiz-dto';
 import { CreateStudentQuizQuestionDto } from './dto/create-student-quiz-question-dto';
+import { UpdateStudentQuizQuestionDto } from './dto/update-student-quiz-question-dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -1324,5 +1325,162 @@ export class UsersController {
     @Body('question_id') question_id: number,
   ) {
     return this.usersService.deleteStudentQuizQuestion(id, question_id);
+  }
+
+  @ApiOperation({ summary: 'Update student quiz question data' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected student quiz id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'UpdateStudentQuizQuestionDto',
+    },
+    description:
+      'The fields we want to update in the student quiz questions data',
+    required: true,
+    type: UpdateStudentQuizQuestionDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The updated student quiz question data',
+    type: UpdateStudentQuizQuestionDto,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Put('/quizzes/questions/update/:id')
+  updateStudentQuizQuestion(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateStudentQuizQuestionDto: UpdateStudentQuizQuestionDto,
+  ) {
+    return this.usersService.updateStudentQuizQuestion(
+      id,
+      updateStudentQuizQuestionDto,
+    );
+  }
+  /**
+   *
+   *  STUDENT - QUIZ - QUESTION
+   *  GET ALL STUDENT QUIZ ANSWERS CORRECT OR NOT
+   *  CHECK IF THE QUIZ IS REVIEWED
+   *  GET STUDENT QUIZ QUESTION'S ANSWER'S TEXT
+   *  SET STUDENT'S ANSWER WEATHER CORRECT OR NOT
+   *
+   */
+  @ApiOperation({ summary: 'check if student answered the question correctly' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected student quiz id',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of student question answers evaluation',
+    type: [Object],
+  })
+  @UseGuards(JwtAuthGuard)
+  @Get('/quizzes/questions/correct/:id')
+  checkIsCorrect(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.checkIsCorrect(id);
+  }
+
+  @ApiOperation({ summary: 'check if the student quiz is reviewed' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected student quiz id',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Weather the student quiz is reviewed or not',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Get('/quizzes/questions/reviewed/:id')
+  checkIsReviewed(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.checkIsReviewed(id);
+  }
+
+  @ApiOperation({ summary: 'Get student quiz question answer' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected student quiz id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        question_id: {
+          type: 'number',
+          example: 4,
+          description: 'The selected question id',
+        },
+      },
+    },
+    description: 'The question id',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The question answer',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('/quizzes/questions/answer/:id')
+  getStudentAnswer(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('question_id') question_id: number,
+  ) {
+    return this.usersService.getStudentAnswer(id, question_id);
+  }
+
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected student quiz id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        question_id: {
+          type: 'number',
+          example: 4,
+          description: 'The selected question id',
+        },
+        is_correct: {
+          type: 'boolean',
+          example: true,
+          description: "Weather the studnet's answer is correct or not",
+        },
+      },
+    },
+    description: 'The question id and the answer status',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The student quiz question data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('/quizzes/questions/answer/review/:id')
+  reviewAnswer(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('question_id') question_id: number,
+    @Body('is_correct') is_correct: boolean,
+  ) {
+    return this.usersService.reviewAnswer(id, question_id, is_correct);
   }
 }
