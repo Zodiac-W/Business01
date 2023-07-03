@@ -25,6 +25,9 @@ export class AuthService {
 
   async loginUser(loginUserDto: LoginUserDto): Promise<any> {
     const user = await this.usersService.loginUser(loginUserDto);
+    if (user.message) {
+      return user;
+    }
     const payload = { sub: user.id };
 
     return {
