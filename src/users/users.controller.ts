@@ -34,6 +34,10 @@ import { CreateStudentQuizDto } from './dto/create-student-quiz-dto';
 import { UpdateStudentQuizDto } from './dto/update-student-quiz-dto';
 import { CreateStudentQuizQuestionDto } from './dto/create-student-quiz-question-dto';
 import { UpdateStudentQuizQuestionDto } from './dto/update-student-quiz-question-dto';
+import { CreateCommentDto } from 'src/discusion/dto/create-comment-dto';
+import { UpdateCommentDto } from 'src/discusion/dto/update-comment-dto';
+import { CreateCommentReplayDto } from 'src/discusion/dto/create-comment-replay-dto';
+import { UpdateCommentReplayDto } from 'src/discusion/dto/update-comment-replay-dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -1482,5 +1486,239 @@ export class UsersController {
     @Body('is_correct') is_correct: boolean,
   ) {
     return this.usersService.reviewAnswer(id, question_id, is_correct);
+  }
+  /**
+   *
+   * COMMENT
+   * GET ALL
+   * GET ONE
+   * SET COMMENT
+   * DELETE COMMENT
+   * UPDATE COMMENT
+   *
+   */
+  @ApiOperation({ summary: "Get all discussion's comments" })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected discussion id',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of discssion comments',
+    type: CreateCommentDto,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Get('/comments/all/:id')
+  getComments(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getComments(id);
+  }
+
+  @ApiOperation({ summary: 'Get one comment' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected comment id',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The selected comment data',
+    type: CreateCommentDto,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Get('/comments/one/:id')
+  getComment(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getComment(id);
+  }
+
+  @ApiOperation({ summary: 'Set new comment' })
+  @ApiBearerAuth()
+  @ApiBody({
+    schema: {
+      type: 'CreateCommentDto',
+    },
+    description: 'The comment data',
+    required: true,
+    type: CreateCommentDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The comment data',
+    type: CreateCommentDto,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('/comments/new')
+  setComment(@Body() createCommentDto: CreateCommentDto) {
+    return this.usersService.setComment(createCommentDto);
+  }
+
+  @ApiOperation({ summary: 'Delete comment' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected comment id',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The deleted comment data',
+    type: CreateCommentDto,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Delete('/comments/delete/:id')
+  deleteComment(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.deleteComment(id);
+  }
+
+  @ApiOperation({ summary: 'Update comment' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected comment id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'UpdateCommentDto',
+    },
+    description: 'The fields we want to update in the comment',
+    required: true,
+    type: UpdateCommentDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The updated comment data',
+    type: UpdateCommentDto,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Put('/comments/update/:id')
+  updateComment(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateCommentDto: UpdateCommentDto,
+  ) {
+    return this.usersService.updateComment(id, updateCommentDto);
+  }
+  /**
+   *
+   * COMMENT REPLAY
+   * GET ALL
+   * GET ONE
+   * SET COMMENT REPLAY
+   * DELETE COMMENT REPLAY
+   * UPDATE COMMENT REPLAY
+   *
+   */
+  @ApiOperation({ summary: 'Get all comment replays' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected comment id',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of comment replays',
+    type: [CreateCommentReplayDto],
+  })
+  @UseGuards(JwtAuthGuard)
+  @Get('/comments/replays/all/:id')
+  getCommentReplays(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getcommentReplays(id);
+  }
+
+  @ApiOperation({ summary: 'Get one comment replay' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected replay id',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The replay data',
+    type: CreateCommentReplayDto,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Get('/comments/replays/one/:id')
+  getCommentReplay(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getCommentReplay(id);
+  }
+
+  @ApiOperation({ summary: 'Set new comment replay' })
+  @ApiBearerAuth()
+  @ApiBody({
+    schema: {
+      type: 'CreateCommentReplayDto',
+    },
+    description: 'The comment replay data',
+    required: true,
+    type: CreateCommentReplayDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The new comment replay data',
+    type: CreateCommentReplayDto,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('/comments/replays/new/')
+  setCommentReplay(@Body() createCommentReplayDto: CreateCommentReplayDto) {
+    return this.usersService.setCommentReplay(createCommentReplayDto);
+  }
+
+  @ApiOperation({ summary: 'Delete comment replay' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected replay id',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The deleted replay data',
+    type: CreateCommentReplayDto,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Delete('/comments/replays/delete/:id')
+  deleteCommentReplay(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.deleteCommentReplay(id);
+  }
+
+  @ApiOperation({ summary: 'Update comment replay' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected replay id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'UpdateCommentReplayDto',
+    },
+    description: 'The fields we want to update in the replay',
+    required: true,
+    type: UpdateCommentReplayDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The updated replay data',
+    type: UpdateCommentReplayDto,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Put('/comments/replays/update/:id')
+  updateCommentReplay(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateCommentReplayDto: UpdateCommentReplayDto,
+  ) {
+    return this.usersService.updateCommentReplay(id, updateCommentReplayDto);
   }
 }

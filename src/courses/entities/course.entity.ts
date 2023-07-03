@@ -11,6 +11,7 @@ import {
 import { Course_lesson } from './course-lesson.entity';
 import { Course_meta } from './course-meta.entity';
 import { Course_quiz } from './course-quiz.entity';
+import { Course_discusion } from './course-discusion.entity';
 
 @Entity()
 export class Course {
@@ -55,4 +56,10 @@ export class Course {
 
   @OneToMany((type) => Course_quiz, (course_quiz) => course_quiz.course)
   course_quiz: Course_quiz[];
+
+  @OneToMany(
+    (type) => Course_discusion,
+    (course_discusion) => course_discusion.course,
+  )
+  course_discusion: Course_discusion[];
 }

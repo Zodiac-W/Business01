@@ -16,6 +16,9 @@ import { Student_quiz } from './entities/student-quiz.entity';
 import { QuizzesModule } from 'src/quizzes/quizzes.module';
 import { QuestionsModule } from 'src/questions/questions.module';
 import { Student_quiz_question } from './entities/student-quiz-question.entity';
+import { DiscusionModule } from 'src/discusion/discusion.module';
+import { Comment } from 'src/discusion/entities/comment.entity';
+import { Comment_replay } from 'src/discusion/entities/comment-replay.entity';
 
 @Module({
   imports: [
@@ -29,6 +32,8 @@ import { Student_quiz_question } from './entities/student-quiz-question.entity';
       Instructor_lesson,
       Student_quiz,
       Student_quiz_question,
+      Comment,
+      Comment_replay,
     ]),
     RolesModule,
     LessonsModule,
@@ -36,6 +41,7 @@ import { Student_quiz_question } from './entities/student-quiz-question.entity';
     QuizzesModule,
     QuestionsModule,
     Student_quiz_question,
+    DiscusionModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],

@@ -31,6 +31,13 @@ import { CreateStudentQuizQuestionDto } from './dto/create-student-quiz-question
 import { UpdateStudentQuizQuestionDto } from './dto/update-student-quiz-question-dto';
 import { Question } from 'src/questions/entities/question.entity';
 import { Answer } from 'src/questions/entities/answer.entity';
+import { Comment } from 'src/discusion/entities/comment.entity';
+import { DiscusionService } from 'src/discusion/discusion.service';
+import { CreateCommentDto } from 'src/discusion/dto/create-comment-dto';
+import { UpdateCommentDto } from 'src/discusion/dto/update-comment-dto';
+import { Comment_replay } from 'src/discusion/entities/comment-replay.entity';
+import { CreateCommentReplayDto } from 'src/discusion/dto/create-comment-replay-dto';
+import { UpdateCommentReplayDto } from 'src/discusion/dto/update-comment-replay-dto';
 
 @Injectable()
 export class UsersService {
@@ -65,6 +72,13 @@ export class UsersService {
     @InjectRepository(Student_quiz_question)
     private student_quiz_questionRepository: Repository<Student_quiz_question>,
     private questionsServce: QuestionsService,
+
+    @InjectRepository(Comment)
+    private commentRepository: Repository<Comment>,
+    private discusionService: DiscusionService,
+
+    @InjectRepository(Comment_replay)
+    private comment_replayRepository: Repository<Comment_replay>,
   ) {}
 
   async signupUser(createUserDto: CreateUserDto): Promise<any> {
@@ -894,5 +908,174 @@ export class UsersService {
 
     await this.student_quiz_questionRepository.save(student_quiz_question);
     return student_quiz_question;
+  }
+  /**
+   *
+   * COMMENT
+   * GET ALL
+   * GET ONE
+   * SET COMMENT
+   * DELETE COMMENT
+   * UPDATE COMMENT
+   *
+   */
+  async getComments(discusion_id: number): Promise<any> {
+    try {
+      const comments = await this.commentRepository.find({
+        where: { discusion: { id: discusion_id } },
+        relations: ['user', 'discusion'],
+      });
+
+      if (comments.length < 1) {
+        return { message: "This discussion doesn't have any comments" };
+      }
+
+      return comments;
+    } catch (err) {
+      return { message: err.message };
+    }
+  }
+
+  async getComment(comment_id: number): Promise<any> {
+    try {
+      const comment = await this.commentRepository.findOne({
+        where: { id: comment_id },
+        relations: ['user', 'discusion'],
+      });
+
+      if (!comment) {
+        return { message: "This comment doesn't exist" };
+      }
+
+      return comment;
+    } catch (err) {
+      return { message: err.message };
+    }
+  }
+
+  async setComment(createCommentDto: CreateCommentDto): Promise<any> {
+    const { comment_txt, user_id, discusion_id } = createCommentDto;
+
+    const user = await this.getUser(user_id);
+    const discssion = await this.discusionService.getDiscusion(discusion_id);
+
+    const comment = new Comment();
+
+    comment.comment_txt = comment_txt;
+    comment.user = user;
+    comment.discusion = discssion;
+
+    await this.commentRepository.save(comment);
+    return comment;
+  }
+
+  async deleteComment(comment_id: number): Promise<any> {
+    const comment = await this.getComment(comment_id);
+
+    if (comment.message) {
+      return comment;
+    }
+
+    await this.commentRepository.softDelete(comment_id);
+    return comment;
+  }
+
+  async updateComment(
+    comment_id: number,
+    updateCommentDto: UpdateCommentDto,
+  ): Promise<any> {
+    let comment = await this.getComment(comment_id);
+
+    if (comment.message) {
+      return comment;
+    }
+
+    comment = { ...comment, ...updateCommentDto };
+    await this.commentRepository.save(comment);
+    return comment;
+  }
+  /**
+   *
+   * COMMENT REPLAY
+   * GET ALL
+   * GET ONE
+   * SET COMMENT REPLAY
+   * DELETE COMMENT REPLAY
+   * UPDATE COMMENT REPLAY
+   *
+   */
+  async getcommentReplays(comment_id: number): Promise<any> {
+    try {
+      const comment_replays = await this.comment_replayRepository.find({
+        where: { comment: { id: comment_id } },
+      });
+
+      if (comment_replays.length < 1) {
+        return { message: "This comment doesn't have any replays yet" };
+      }
+
+      return comment_replays;
+    } catch (err) {
+      return { message: err.message };
+    }
+  }
+
+  async getCommentReplay(replay_id: number): Promise<any> {
+    try {
+      const replay = await this.comment_replayRepository.findOne({
+        where: { id: replay_id },
+        relations: ['user', 'comment'],
+      });
+
+      if (!replay) {
+        return { message: "This replay doesn't exist" };
+      }
+      return replay;
+    } catch (err) {
+      return { message: err.message };
+    }
+  }
+
+  async setCommentReplay(
+    createCommentReplayDto: CreateCommentReplayDto,
+  ): Promise<any> {
+    const { comment_replay_txt, user_id, comment_id } = createCommentReplayDto;
+
+    const user = await this.getUser(user_id);
+    const comment = await this.getComment(comment_id);
+
+    const comment_replay = new Comment_replay();
+    comment_replay.comment_replay_txt = comment_replay_txt;
+    comment_replay.user = user;
+    comment_replay.comment = comment;
+
+    await this.comment_replayRepository.save(comment_replay);
+    return comment_replay;
+  }
+
+  async deleteCommentReplay(replay_id: number): Promise<any> {
+    const comment_replay = await this.getCommentReplay(replay_id);
+
+    if (comment_replay.message) {
+      return comment_replay;
+    }
+
+    await this.comment_replayRepository.softDelete(comment_replay.id);
+    return comment_replay;
+  }
+
+  async updateCommentReplay(
+    replay_id: number,
+    updateCommentReplayDto: UpdateCommentReplayDto,
+  ): Promise<any> {
+    let replay = await this.getCommentReplay(replay_id);
+
+    if (replay.message) {
+      return replay;
+    }
+
+    replay = { ...replay, ...updateCommentReplayDto };
+    await this.comment_replayRepository.save(replay);
+    return replay;
   }
 }

@@ -11,6 +11,8 @@ import { Course_meta } from './entities/course-meta.entity';
 import { Course } from './entities/course.entity';
 import { Course_quiz } from './entities/course-quiz.entity';
 import { QuizzesService } from 'src/quizzes/quizzes.service';
+import { Course_discusion } from './entities/course-discusion.entity';
+import { DiscusionService } from 'src/discusion/discusion.service';
 
 @Injectable()
 export class CoursesService {
@@ -31,6 +33,10 @@ export class CoursesService {
     @InjectRepository(Course_quiz)
     private course_quizRepository: Repository<Course_quiz>,
     private quizzesService: QuizzesService,
+
+    @InjectRepository(Course_discusion)
+    private course_discusionRepository: Repository<Course_discusion>,
+    private discusionService: DiscusionService,
   ) {}
   /**
    *
@@ -381,5 +387,105 @@ export class CoursesService {
     await this.deleteCourseQuiz(course_id, quiz_id_old);
     const new_course_quiz = await this.setCourseQuiz(course_id, quiz_id_new);
     return new_course_quiz;
+  }
+  /**
+   *
+   * COURSE - DISCUSSION
+   * GET ALL COURSE DISCUSSIONS
+   * GET ONE COURSE DISCUSSION
+   * SET COURSE DISCUSSION
+   * DELETE COURSE DISCUSSION
+   * UPDATE COURSE DISCUSSION
+   *
+   */
+  async getCourseDiscusions(course_id: number): Promise<any> {
+    try {
+      const course_discusion = await this.course_discusionRepository.find({
+        where: { course: { id: course_id } },
+        relations: ['course', 'discusion'],
+      });
+
+      if (course_discusion.length < 1) {
+        return { message: "This course doesn't have any discussions yet" };
+      }
+
+      return course_discusion;
+    } catch (err) {
+      return { message: err.message };
+    }
+  }
+
+  async getCourseDiscusion(
+    course_id: number,
+    discusion_id: number,
+  ): Promise<any> {
+    try {
+      const course_discusion = await this.course_discusionRepository.findOne({
+        where: { course: { id: course_id }, discusion: { id: discusion_id } },
+        relations: ['course', 'discusion'],
+      });
+
+      if (!course_discusion) {
+        return { message: "This course doesn't have this discussion" };
+      }
+
+      return course_discusion;
+    } catch (err) {
+      return { message: err.message };
+    }
+  }
+
+  async setCourseDiscusion(
+    course_id: number,
+    discusion_id: number,
+  ): Promise<any> {
+    const course = await this.getCourse(course_id);
+    const discusion = await this.discusionService.getDiscusion(discusion_id);
+
+    const course_discusion = new Course_discusion();
+    course_discusion.course = course;
+    course_discusion.discusion = discusion;
+
+    await this.course_discusionRepository.save(course_discusion);
+    return course_discusion;
+  }
+
+  async deleteCourseDiscusion(
+    course_id: number,
+    discusion_id: number,
+  ): Promise<any> {
+    const course_discusion = await this.getCourseDiscusion(
+      course_id,
+      discusion_id,
+    );
+
+    if (course_discusion.message) {
+      return course_discusion;
+    }
+
+    await this.course_discusionRepository.softDelete(course_discusion.id);
+    return course_discusion;
+  }
+
+  async updateCourseDiscusion(
+    course_id: number,
+    discusion_id_old: number,
+    discusion_id_new: number,
+  ): Promise<any> {
+    const course_discusion = await this.getCourseDiscusion(
+      course_id,
+      discusion_id_old,
+    );
+
+    if (course_discusion.message) {
+      return course_discusion;
+    }
+
+    await this.course_discusionRepository.softDelete(course_discusion.id);
+    const new_course_discusion = await this.setCourseDiscusion(
+      course_id,
+      discusion_id_new,
+    );
+    return new_course_discusion;
   }
 }

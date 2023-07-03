@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmOptionsFactory } from '@nestjs/typeorm';
+import { Course_discusion } from 'src/courses/entities/course-discusion.entity';
 import { Course_lesson } from 'src/courses/entities/course-lesson.entity';
 import { Course_meta } from 'src/courses/entities/course-meta.entity';
 import { Course_quiz } from 'src/courses/entities/course-quiz.entity';
 import { Course } from 'src/courses/entities/course.entity';
+import { Comment_replay } from 'src/discusion/entities/comment-replay.entity';
+import { Comment } from 'src/discusion/entities/comment.entity';
 import { Discusion } from 'src/discusion/entities/discusion.entity';
 import { Lesson_meta } from 'src/lessons/entities/lesson-meta.entity';
 import { Lesson } from 'src/lessons/entities/lesson.entity';
@@ -62,6 +65,9 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         Student_quiz_question,
         Course_quiz,
         Discusion,
+        Comment,
+        Course_discusion,
+        Comment_replay,
       ],
       migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
       cli: {

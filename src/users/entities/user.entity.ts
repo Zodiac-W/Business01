@@ -15,6 +15,8 @@ import { Student_lesson } from './student-lesson.entity';
 import { User_meta } from './user-meta.entity';
 import { User_role } from './user-role.entity';
 import { Student_quiz } from './student-quiz.entity';
+import { Comment } from 'src/discusion/entities/comment.entity';
+import { Comment_replay } from 'src/discusion/entities/comment-replay.entity';
 
 @Entity()
 export class User {
@@ -70,5 +72,11 @@ export class User {
   instructor_lesson: Instructor_lesson[];
 
   @OneToMany((type) => Student_quiz, (student_quiz) => student_quiz.user)
-  student_quiz: Student_quiz;
+  student_quiz: Student_quiz[];
+
+  @OneToMany((type) => Comment, (comment) => comment.user)
+  comment: Comment[];
+
+  @OneToMany((type) => Comment_replay, (comment_replay) => comment_replay.user)
+  comment_replay: Comment_replay[];
 }

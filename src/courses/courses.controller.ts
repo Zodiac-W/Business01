@@ -672,4 +672,186 @@ export class CoursesController {
   ) {
     return this.coursesService.updateCourseQuiz(id, quiz_id_old, quiz_id_new);
   }
+  /**
+   *
+   * COURSE - DISCUSSION
+   * GET ALL COURSE DISCUSSIONS
+   * GET ONE COURSE DISCUSSION
+   * SET COURSE DISCUSSION
+   * DELETE COURSE DISCUSSION
+   * UPDATE COURSE DISCUSSION
+   *
+   */
+  @ApiOperation({ summary: 'Get all course discussions' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected course id',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The selected course discussions data',
+    type: [Object],
+  })
+  @UseGuards(JwtAuthGuard)
+  @Get('/discussions/all/:id')
+  getCourseDiscusions(@Param('id', ParseIntPipe) id: number) {
+    return this.coursesService.getCourseDiscusions(id);
+  }
+
+  @ApiOperation({ summary: 'Get one course discussion' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected course id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        discusion_id: {
+          type: 'number',
+          example: 4,
+          description: 'The selected discussion id',
+        },
+      },
+    },
+    description: 'The discussion id',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The selected course discussion data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('/discussions/one/:id')
+  getCourseDiscusion(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('discusion_id') discusion_id: number,
+  ) {
+    return this.coursesService.getCourseDiscusion(id, discusion_id);
+  }
+
+  @ApiOperation({ summary: 'Set new course discussion' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected course id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        disucsion_id: {
+          type: 'number',
+          example: 4,
+          description: 'The selected discussion id',
+        },
+      },
+    },
+    description: 'The discussion id',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The new course discussion data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('/discussions/new/:id')
+  setCourseDiscusion(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('disucsion_id') disucsion_id: number,
+  ) {
+    return this.coursesService.setCourseDiscusion(id, disucsion_id);
+  }
+
+  @ApiOperation({ summary: 'Delete course discussion' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected course is',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        discusion_id: {
+          type: 'number',
+          example: 4,
+          description: 'The selected discussion id',
+        },
+      },
+    },
+    description: 'The discussion id',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The deleted course discussion data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Delete('/discussions/delete/:id')
+  deleteCourseDiscusion(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('discusion_id') discusion_id: number,
+  ) {
+    return this.coursesService.deleteCourseDiscusion(id, discusion_id);
+  }
+
+  @ApiOperation({ summary: 'Update course discussion' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected course id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        discusion_id_old: {
+          type: 'number',
+          example: 4,
+          description: 'The old discussion id',
+        },
+        discusion_id_new: {
+          type: 'number',
+          example: 6,
+          description: 'The new discussion id',
+        },
+      },
+    },
+    description: 'The old & new discussions ids',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The updated course discussion',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Put('/discussions/update/:id')
+  updateCourseDiscusion(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('discusion_id_old') discusion_id_old: number,
+    @Body('discusion_id_new') discusion_id_new: number,
+  ) {
+    return this.coursesService.updateCourseDiscusion(
+      id,
+      discusion_id_old,
+      discusion_id_new,
+    );
+  }
 }
