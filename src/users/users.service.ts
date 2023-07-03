@@ -269,6 +269,9 @@ export class UsersService {
    */
   async setUserNickname(nickname: string, id: number): Promise<any> {
     const user = await this.getUser(id);
+    if (user.message) {
+      return user;
+    }
 
     const user_meta = new User_meta();
     user_meta.meta_key = 'nickname';
@@ -283,17 +286,27 @@ export class UsersService {
    *
    */
   async getUserMeta(id: number): Promise<any> {
-    const user = await this.usersRepository.findOne({
-      where: { id },
-      relations: ['user_meta'],
-    });
+    try {
+      const user = await this.usersRepository.findOne({
+        where: { id },
+        relations: ['user_meta'],
+      });
+      if (!user) {
+        return { message: 'User not found' };
+      }
 
-    const meta = user.user_meta;
-    return meta;
+      const meta = user.user_meta;
+      return meta;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
 
   async setUserMeta(id: number, key: string, value: string): Promise<any> {
     const user = await this.getUser(id);
+    if (user.message) {
+      return user;
+    }
 
     const user_meta = new User_meta();
     user_meta.meta_key = key;
@@ -309,15 +322,25 @@ export class UsersService {
    *
    */
   async setUserRole(userId: number, roleId: number): Promise<any> {
-    const user = await this.getUser(userId);
-    const role = await this.roleService.getRole(roleId);
+    try {
+      const user = await this.getUser(userId);
+      const role = await this.roleService.getRole(roleId);
 
-    const user_role = new User_role();
-    user_role.user = user;
-    user_role.role = role;
+      if (user.message) {
+        return user;
+      }
+      if (role.message) {
+        return role;
+      }
+      const user_role = new User_role();
+      user_role.user = user;
+      user_role.role = role;
 
-    await this.user_roleRepository.save(user_role);
-    return user_role;
+      await this.user_roleRepository.save(user_role);
+      return user_role;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
 
   async getUserRole(id: number) {
