@@ -319,6 +319,10 @@ export class UsersService {
   /**
    *
    * USER - ROLE
+   * SET USER ROLE
+   * GET USER'S ROLS
+   * DELETE USER ROLE
+   * UPDATE USER ROLE
    *
    */
   async setUserRole(userId: number, roleId: number): Promise<any> {
@@ -343,31 +347,55 @@ export class UsersService {
     }
   }
 
-  async getUserRole(id: number) {
-    const user_role = await this.user_roleRepository.findOne({
-      where: { user: { id: id } },
-      relations: ['role'],
-    });
+  async getUserRole(id: number): Promise<any> {
+    try {
+      const user_role = await this.user_roleRepository.findOne({
+        where: { user: { id: id } },
+        relations: ['role'],
+      });
 
-    const role = user_role.role;
-    return role;
+      if (!user_role) {
+        return { message: "This user doesn't have a role" };
+      }
+
+      const role = user_role.role;
+      return role;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
 
   async deleteUserRole(id: number): Promise<any> {
-    const user_role = await this.user_roleRepository.findOne({
-      where: { user: { id: id } },
-      relations: ['role', 'user'],
-    });
+    try {
+      const user_role = await this.user_roleRepository.findOne({
+        where: { user: { id: id } },
+        relations: ['role', 'user'],
+      });
 
-    await this.user_roleRepository.softDelete(user_role.id);
-    return user_role;
+      if (!user_role) {
+        return { message: "This user doesn't have a role" };
+      }
+
+      await this.user_roleRepository.softDelete(user_role.id);
+      return user_role;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
 
   async updateUserRole(userId: number, roleId: number): Promise<any> {
-    await this.deleteUserRole(userId);
+    try {
+      const user_role = await this.getUserRole(userId);
+      if (user_role.message) {
+        return user_role;
+      }
+      await this.deleteUserRole(userId);
 
-    const user_role = await this.setUserRole(userId, roleId);
-    return user_role;
+      const new_user_role = await this.setUserRole(userId, roleId);
+      return new_user_role;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
   /**
    *
