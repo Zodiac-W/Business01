@@ -144,11 +144,15 @@ export class UsersService {
   }
 
   async getUser(id: number): Promise<any> {
-    const user = await this.usersRepository.findOne({ where: { id } });
-    if (!user) {
-      throw Error('User does not exist');
+    try {
+      const user = await this.usersRepository.findOne({ where: { id } });
+      if (!user) {
+        throw Error('User does not exist');
+      }
+      return user;
+    } catch (err) {
+      return { message: err.message };
     }
-    return user;
   }
 
   async validateUser(id: number): Promise<any> {
@@ -163,27 +167,41 @@ export class UsersService {
 
   async getUserType(id: number): Promise<any> {
     const user = await this.getUser(id);
+    if (user.message) {
+      return user;
+    }
     const user_type = user.user_type;
     return { user_type };
   }
 
   async getAllUsers(): Promise<any> {
-    const users = await this.usersRepository.find();
-    return users;
+    try {
+      const users = await this.usersRepository.find();
+      return users;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
 
   async getAllUserNames(): Promise<any> {
-    const names = await this.usersRepository.find({
-      select: ['user_name'],
-    });
-    const usernames = names.map((name) => {
-      return { username: name };
-    });
-    return usernames;
+    try {
+      const names = await this.usersRepository.find({
+        select: ['user_name'],
+      });
+      const usernames = names.map((name) => {
+        return { username: name };
+      });
+      return usernames;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
 
   async deleteUser(id: number): Promise<any> {
     const user = await this.getUser(id);
+    if (user.message) {
+      return user;
+    }
 
     await this.usersRepository.softDelete(id);
 
@@ -192,6 +210,9 @@ export class UsersService {
 
   async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<any> {
     let user = await this.getUser(id);
+    if (user.message) {
+      return user;
+    }
 
     user = { ...user, ...updateUserDto };
     await this.usersRepository.save(user);
