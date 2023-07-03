@@ -142,21 +142,27 @@ export class UsersService {
   }
 
   async loginUser(loginUserDto: LoginUserDto): Promise<any> {
-    const { user_email, user_pass } = loginUserDto;
-
-    const user = await this.usersRepository.findOne({ where: { user_email } });
     try {
-      if (!user) {
-        throw Error('Incorrect Email');
-      }
-      const match = await bcrypt.compare(user_pass, user.user_pass);
+      const { user_email, user_pass } = loginUserDto;
 
-      if (!match) {
-        throw Error('Incorrect Password');
-      }
+      const user = await this.usersRepository.findOne({
+        where: { user_email },
+      });
+      try {
+        if (!user) {
+          throw Error('Incorrect Email');
+        }
+        const match = await bcrypt.compare(user_pass, user.user_pass);
 
-      const { user_pass: pass, ...userPassed } = user;
-      return userPassed;
+        if (!match) {
+          throw Error('Incorrect Password');
+        }
+
+        const { user_pass: pass, ...userPassed } = user;
+        return userPassed;
+      } catch (err) {
+        return { message: err.message };
+      }
     } catch (err) {
       return { message: err.message };
     }
