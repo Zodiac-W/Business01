@@ -13,6 +13,9 @@ export class AuthService {
 
   async signupUser(createUserDto: CreateUserDto): Promise<any> {
     const user = await this.usersService.signupUser(createUserDto);
+    if (user.message) {
+      return user;
+    }
     const payload = { sub: user.id };
 
     return {

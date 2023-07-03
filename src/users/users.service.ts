@@ -95,14 +95,14 @@ export class UsersService {
     let exist: any;
     try {
       exist = await this.getUserByEmail(user_email);
-    } catch (err) {}
-
-    if (exist) {
-      throw Error('This email address is already registered');
-    }
-
-    if (user_pass != password_confirm) {
-      throw Error('Your passwords does not match');
+      if (!exist.message) {
+        throw Error('This email address is already registered');
+      }
+      if (user_pass != password_confirm) {
+        throw Error('Your passwords does not match');
+      }
+    } catch (err) {
+      return { message: err.message };
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -201,7 +201,7 @@ export class UsersService {
       where: { user_email: email },
     });
     if (!user) {
-      throw Error('User not found');
+      return { message: 'User not found' };
     }
     return user;
   }
