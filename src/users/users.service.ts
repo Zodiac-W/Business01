@@ -80,7 +80,22 @@ export class UsersService {
     @InjectRepository(Comment_replay)
     private comment_replayRepository: Repository<Comment_replay>,
   ) {}
-
+  /**
+   *
+   * USER
+   * SIGNUP USER [ CREATE USER ]
+   * LOGIN USER
+   * GET ONE USER
+   * VALIDATE USER
+   * GET USER TYPE
+   * GET ALL USERS
+   * GET ALL USERS NAMES
+   * DELETE USER
+   * UPDATE USER
+   * GET USER BY EMAIL
+   * GET USER BY PHONE
+   *
+   */
   async signupUser(createUserDto: CreateUserDto): Promise<any> {
     const {
       user_name,
