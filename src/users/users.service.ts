@@ -400,26 +400,47 @@ export class UsersService {
   /**
    *
    * STUDENT - COURSE
+   * GET STUDENT COURSES
+   * GET STUDENT COURSE
+   * SET STUDENT CORUSE
+   * DELETE STUDENT COURSE
+   * UPDATE STUDENT CORUSE
    *
    */
   async getStudentCourses(id: number): Promise<any> {
-    const user = await this.usersRepository.findOne({
-      where: { id },
-      relations: ['student_course', 'student_course.course'],
-    });
-    const courses = user.student_course;
-    return courses;
+    try {
+      const student_courses = await this.student_courseRepository.find({
+        where: { user: { id } },
+        relations: ['user', 'course'],
+      });
+
+      if (student_courses.length < 1) {
+        return { message: "This Student didn't enroll at any course" };
+      }
+      return student_courses;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
 
   async getStudentCourse(userId: number, courseId: number): Promise<any> {
-    const student_course = await this.student_courseRepository.findOne({
-      where: {
-        user: { id: userId },
-        course: { id: courseId },
-      },
-      relations: ['course'],
-    });
-    return student_course;
+    try {
+      const student_course = await this.student_courseRepository.findOne({
+        where: {
+          user: { id: userId },
+          course: { id: courseId },
+        },
+        relations: ['course'],
+      });
+
+      if (!student_course) {
+        return { message: "This student didn't enroll in this coruse" };
+      }
+
+      return student_course;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
 
   async setStudentCourse(
@@ -427,24 +448,33 @@ export class UsersService {
     courseId: number,
     status: StudentCourseStatus,
   ): Promise<any> {
-    const exist = await this.getStudentCourse(userId, courseId);
-    if (exist) {
-      return { message: 'Student is already enrolled' };
+    try {
+      const exist = await this.getStudentCourse(userId, courseId);
+      if (!exist.message) {
+        return { message: 'Student is already enrolled' };
+      }
+
+      const user = await this.getUser(userId);
+      const course = await this.coursesService.getCourse(courseId);
+
+      const student_course = new Student_course();
+      student_course.user = user;
+      student_course.course = course;
+      student_course.student_course_status = status;
+
+      await this.student_courseRepository.save(student_course);
+      return student_course;
+    } catch (err) {
+      return { message: err.message };
     }
-    const user = await this.getUser(userId);
-    const course = await this.coursesService.getCourse(courseId);
-
-    const student_course = new Student_course();
-    student_course.user = user;
-    student_course.course = course;
-    student_course.student_course_status = status;
-
-    await this.student_courseRepository.save(student_course);
-    return student_course;
   }
 
   async deleteStudentCourse(userId: number, courseId: number): Promise<any> {
     const student_course = await this.getStudentCourse(userId, courseId);
+
+    if (student_course.message) {
+      return student_course;
+    }
 
     await this.student_courseRepository.softDelete(student_course.id);
     return student_course;
@@ -456,6 +486,10 @@ export class UsersService {
     status: StudentCourseStatus,
   ): Promise<any> {
     const student_course = await this.getStudentCourse(userId, courseId);
+    if (student_course.message) {
+      return student_course;
+    }
+
     student_course.student_course_status = status;
 
     await this.student_courseRepository.save(student_course);
