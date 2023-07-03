@@ -856,9 +856,8 @@ export class UsersService {
   }
 
   async getStudentQuiz(studentId: number, quizId: number): Promise<any> {
-    let student_quiz: any;
     try {
-      student_quiz = await this.student_quizRepository.findOne({
+      const student_quiz = await this.student_quizRepository.findOne({
         where: { user: { id: studentId }, quiz: { id: quizId } },
         relations: [
           'quiz',
@@ -878,14 +877,18 @@ export class UsersService {
   }
 
   async getStudentQuizById(id: number): Promise<any> {
-    const student_quiz = await this.student_quizRepository.findOne({
-      where: { id },
-    });
+    try {
+      const student_quiz = await this.student_quizRepository.findOne({
+        where: { id },
+      });
 
-    if (!student_quiz) {
-      return { message: "The student didn't take this quiz" };
+      if (!student_quiz) {
+        return { message: "The student didn't take this quiz" };
+      }
+      return student_quiz;
+    } catch (err) {
+      return { message: err.message };
     }
-    return student_quiz;
   }
 
   async setStudentQuiz(
@@ -898,44 +901,58 @@ export class UsersService {
       student_quiz_status,
       student_quiz_reviewed,
     } = createStudentQuizDto;
-
-    let user: any;
-    let quiz: any;
     try {
-      user = await this.getUser(student_id);
-      quiz = await this.quizzesService.getQuiz(quiz_id);
+      const user = await this.getUser(student_id);
+      const quiz = await this.quizzesService.getQuiz(quiz_id);
+
+      const student_quiz = new Student_quiz();
+      student_quiz.user = user;
+      student_quiz.quiz = quiz;
+      student_quiz.student_quiz_score = student_quiz_score;
+      student_quiz.student_quiz_status = student_quiz_status;
+      student_quiz.student_quiz_reviewed = student_quiz_reviewed;
+
+      await this.student_quizRepository.save(student_quiz);
+      return student_quiz;
     } catch (err) {
       return { message: err.message };
     }
-
-    const student_quiz = new Student_quiz();
-    student_quiz.user = user;
-    student_quiz.quiz = quiz;
-    student_quiz.student_quiz_score = student_quiz_score;
-    student_quiz.student_quiz_status = student_quiz_status;
-    student_quiz.student_quiz_reviewed = student_quiz_reviewed;
-
-    await this.student_quizRepository.save(student_quiz);
-    return student_quiz;
   }
 
   async deleteStudentQuiz(userId: number, quizId: number): Promise<any> {
-    const student_quiz = await this.getStudentQuiz(userId, quizId);
+    try {
+      const student_quiz = await this.getStudentQuiz(userId, quizId);
 
-    await this.student_quizRepository.softDelete(student_quiz.id);
-    return student_quiz;
+      if (student_quiz.message) {
+        return student_quiz;
+      }
+
+      await this.student_quizRepository.softDelete(student_quiz.id);
+      return student_quiz;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
 
   async updateStudentQuiz(
     userId: number,
     updateStudentQuizDto: UpdateStudentQuizDto,
   ): Promise<any> {
-    const { quiz_id } = updateStudentQuizDto;
-    let student_quiz = await this.getStudentQuiz(userId, quiz_id);
-    student_quiz = { ...student_quiz, ...updateStudentQuizDto };
+    try {
+      const { quiz_id } = updateStudentQuizDto;
+      let student_quiz = await this.getStudentQuiz(userId, quiz_id);
 
-    await this.student_quizRepository.save(student_quiz);
-    return student_quiz;
+      if (student_quiz.message) {
+        return student_quiz;
+      }
+
+      student_quiz = { ...student_quiz, ...updateStudentQuizDto };
+
+      await this.student_quizRepository.save(student_quiz);
+      return student_quiz;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
   /**
    *
