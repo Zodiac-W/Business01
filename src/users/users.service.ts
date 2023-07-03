@@ -621,23 +621,39 @@ export class UsersService {
    *
    */
   async getStudentLessons(id: number): Promise<any> {
-    const user = await this.usersRepository.findOne({
-      where: { id },
-      relations: ['student_lesson', 'student_lesson.lesson'],
-    });
-    const lessons = user.student_lesson;
-    return lessons;
+    try {
+      const student_lesson = await this.student_lessonRepository.find({
+        where: { user: { id } },
+        relations: ['lesson', 'user'],
+      });
+
+      if (!student_lesson) {
+        return { message: "This student didn't take any lessons yet" };
+      }
+      return student_lesson;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
 
   async getStudentLesson(userId: number, lessonId: number): Promise<any> {
-    const student_lesson = await this.student_lessonRepository.findOne({
-      where: {
-        user: { id: userId },
-        lesson: { id: lessonId },
-      },
-      relations: ['lesson'],
-    });
-    return student_lesson;
+    try {
+      const student_lesson = await this.student_lessonRepository.findOne({
+        where: {
+          user: { id: userId },
+          lesson: { id: lessonId },
+        },
+        relations: ['lesson'],
+      });
+
+      if (!student_lesson) {
+        return { message: "This student didn't take this lesson" };
+      }
+
+      return student_lesson;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
 
   async setStudentLesson(
@@ -645,27 +661,40 @@ export class UsersService {
     lessonId: number,
     status: StudentLessonStatus,
   ): Promise<any> {
-    const exist = await this.getStudentLesson(userId, lessonId);
-    if (exist) {
-      return { message: 'Student is already enrolled' };
+    try {
+      const exist = await this.getStudentLesson(userId, lessonId);
+      if (!exist.message) {
+        return { message: 'Student is already enrolled' };
+      }
+
+      const user = await this.getUser(userId);
+      const lesson = await this.lessonsService.getLesson(lessonId);
+
+      const student_lesson = new Student_lesson();
+      student_lesson.user = user;
+      student_lesson.lesson = lesson;
+      student_lesson.student_lesson_status = status;
+
+      await this.student_lessonRepository.save(student_lesson);
+      return student_lesson;
+    } catch (err) {
+      return { message: err.message };
     }
-    const user = await this.getUser(userId);
-    const lesson = await this.lessonsService.getLesson(lessonId);
-
-    const student_lesson = new Student_lesson();
-    student_lesson.user = user;
-    student_lesson.lesson = lesson;
-    student_lesson.student_lesson_status = status;
-
-    await this.student_lessonRepository.save(student_lesson);
-    return student_lesson;
   }
 
   async deleteStudentLesson(userId: number, lessonId: number): Promise<any> {
-    const student_lesson = await this.getStudentLesson(userId, lessonId);
+    try {
+      const student_lesson = await this.getStudentLesson(userId, lessonId);
 
-    await this.student_lessonRepository.softDelete(student_lesson.id);
-    return student_lesson;
+      if (student_lesson.message) {
+        return student_lesson;
+      }
+
+      await this.student_lessonRepository.softDelete(student_lesson.id);
+      return student_lesson;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
 
   async updateStudentLessonStatus(
@@ -673,11 +702,20 @@ export class UsersService {
     lessonId: number,
     status: StudentLessonStatus,
   ): Promise<any> {
-    const student_lesson = await this.getStudentLesson(userId, lessonId);
-    student_lesson.student_lesson_status = status;
+    try {
+      const student_lesson = await this.getStudentLesson(userId, lessonId);
 
-    await this.student_lessonRepository.save(student_lesson);
-    return student_lesson;
+      if (student_lesson.message) {
+        return student_lesson;
+      }
+
+      student_lesson.student_lesson_status = status;
+
+      await this.student_lessonRepository.save(student_lesson);
+      return student_lesson;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
   /**
    *
