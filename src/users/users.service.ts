@@ -498,48 +498,93 @@ export class UsersService {
   /**
    *
    * INSTRUCTOR - COURSE
+   * GET INSTRUCTOR COURSES
+   * GET INSTRUCTOR ONE COURSE
+   * SET INSTRUCTOR NEW COURSE
+   * DELTE INSTRUCTOR COURSE
+   * UPDATE INSTRUCTOR COURSE
    *
    */
   async getInstructorCourses(id: number): Promise<any> {
-    const user = await this.usersRepository.findOne({
-      where: { id },
-      relations: ['instructor_course', 'instructor_course.course'],
-    });
-    const courses = user.instructor_course;
-    return courses;
+    try {
+      const instructor_courses = await this.instructor_courseRepository.find({
+        where: { user: { id } },
+        relations: ['course'],
+      });
+
+      if (instructor_courses.length < 1) {
+        return { message: "This instructor doesn't have any courses yet" };
+      }
+
+      return instructor_courses;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
 
   async getInstructorCourse(userId: number, courseId: number): Promise<any> {
-    const instructor_course = await this.instructor_courseRepository.findOne({
-      where: {
-        user: { id: userId },
-        course: { id: courseId },
-      },
-      relations: ['course'],
-    });
-    return instructor_course;
+    try {
+      const instructor_course = await this.instructor_courseRepository.findOne({
+        where: {
+          user: { id: userId },
+          course: { id: courseId },
+        },
+        relations: ['course'],
+      });
+
+      if (!instructor_course) {
+        return { message: "This Instructor didn't create this course" };
+      }
+
+      return instructor_course;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
 
   async setInstructorCourse(
     userId: number,
     createCourseDto: CreateCourseDto,
   ): Promise<any> {
-    const user = await this.getUser(userId);
-    const course = await this.coursesService.createCourse(createCourseDto);
+    try {
+      const user = await this.getUser(userId);
+      const course = await this.coursesService.createCourse(createCourseDto);
 
-    const instructor_course = new Instructor_course();
-    instructor_course.user = user;
-    instructor_course.course = course;
+      if (user.message) {
+        return user;
+      }
 
-    await this.instructor_courseRepository.save(instructor_course);
-    return instructor_course;
+      if (course.message) {
+        return course;
+      }
+
+      const instructor_course = new Instructor_course();
+      instructor_course.user = user;
+      instructor_course.course = course;
+
+      await this.instructor_courseRepository.save(instructor_course);
+      return instructor_course;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
 
   async deleteInstructorCourse(userId: number, coruseId: number): Promise<any> {
-    const instructor_course = await this.getInstructorCourse(userId, coruseId);
+    try {
+      const instructor_course = await this.getInstructorCourse(
+        userId,
+        coruseId,
+      );
 
-    await this.instructor_courseRepository.softDelete(instructor_course.id);
-    return instructor_course;
+      if (instructor_course.message) {
+        return instructor_course;
+      }
+
+      await this.instructor_courseRepository.softDelete(instructor_course.id);
+      return instructor_course;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
 
   async updateInstructorCourseStatus(
@@ -547,15 +592,32 @@ export class UsersService {
     courseId: number,
     status: InstructorCourseStatus,
   ): Promise<any> {
-    const instructor_course = await this.getInstructorCourse(userId, courseId);
-    instructor_course.instructor_course_status = status;
+    try {
+      const instructor_course = await this.getInstructorCourse(
+        userId,
+        courseId,
+      );
 
-    await this.instructor_courseRepository.save(instructor_course);
-    return instructor_course;
+      if (instructor_course.message) {
+        return instructor_course;
+      }
+
+      instructor_course.instructor_course_status = status;
+
+      await this.instructor_courseRepository.save(instructor_course);
+      return instructor_course;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
   /**
    *
    * STUDENT - LESSON
+   * GET STUDENT LESSONS
+   * GET STUDENT ONE LESSON
+   * SET STUDENT NEW LESSON
+   * DELETE STUDENT LESSON
+   * UPDATE STUDENT LESSON
    *
    */
   async getStudentLessons(id: number): Promise<any> {
