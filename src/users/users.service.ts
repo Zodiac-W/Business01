@@ -728,45 +728,83 @@ export class UsersService {
    *
    */
   async getInstructorLessons(id: number): Promise<any> {
-    const user = await this.usersRepository.findOne({
-      where: { id },
-      relations: ['instructor_lesson', 'instructor_lesson.lesson'],
-    });
-    const lessons = user.instructor_lesson;
-    return lessons;
+    try {
+      const instructor_lesson = await this.instructor_lessonRepository.find({
+        where: { user: { id } },
+        relations: ['lesson', 'user'],
+      });
+
+      if (instructor_lesson.length < 1) {
+        return { message: "This instructor didn't create any lessons yet" };
+      }
+
+      return instructor_lesson;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
 
   async getInstructorLesson(userId: number, lessonId: number): Promise<any> {
-    const instructor_lesson = await this.instructor_lessonRepository.findOne({
-      where: {
-        user: { id: userId },
-        lesson: { id: lessonId },
-      },
-      relations: ['lesson'],
-    });
-    return instructor_lesson;
+    try {
+      const instructor_lesson = await this.instructor_lessonRepository.findOne({
+        where: {
+          user: { id: userId },
+          lesson: { id: lessonId },
+        },
+        relations: ['lesson'],
+      });
+
+      if (!instructor_lesson) {
+        return { message: "This instructor didn't give this lesson" };
+      }
+
+      return instructor_lesson;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
 
   async setInstructorLesson(
     userId: number,
     createLessonDto: CreateLessonDto,
   ): Promise<any> {
-    const user = await this.getUser(userId);
-    const lesson = await this.lessonsService.createLesson(createLessonDto);
+    try {
+      const user = await this.getUser(userId);
+      const lesson = await this.lessonsService.createLesson(createLessonDto);
 
-    const instructor_lesson = new Instructor_lesson();
-    instructor_lesson.user = user;
-    instructor_lesson.lesson = lesson;
+      if (user.message) {
+        return user;
+      } else if (lesson.message) {
+        return lesson;
+      }
 
-    await this.instructor_lessonRepository.save(instructor_lesson);
-    return instructor_lesson;
+      const instructor_lesson = new Instructor_lesson();
+      instructor_lesson.user = user;
+      instructor_lesson.lesson = lesson;
+
+      await this.instructor_lessonRepository.save(instructor_lesson);
+      return instructor_lesson;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
 
   async deleteInstructorLesson(userId: number, lessonId: number): Promise<any> {
-    const instructor_lesson = await this.getInstructorLesson(userId, lessonId);
+    try {
+      const instructor_lesson = await this.getInstructorLesson(
+        userId,
+        lessonId,
+      );
 
-    await this.instructor_lessonRepository.softDelete(instructor_lesson.id);
-    return instructor_lesson;
+      if (instructor_lesson.message) {
+        return instructor_lesson;
+      }
+
+      await this.instructor_lessonRepository.softDelete(instructor_lesson.id);
+      return instructor_lesson;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
 
   async updateInstructorLessonStatus(
@@ -774,11 +812,22 @@ export class UsersService {
     lessonId: number,
     status: InstructorLessonStatus,
   ): Promise<any> {
-    const instructor_lesson = await this.getInstructorLesson(userId, lessonId);
-    instructor_lesson.instructor_lesson_status = status;
+    try {
+      const instructor_lesson = await this.getInstructorLesson(
+        userId,
+        lessonId,
+      );
+      instructor_lesson.instructor_lesson_status = status;
 
-    await this.instructor_lessonRepository.save(instructor_lesson);
-    return instructor_lesson;
+      if (instructor_lesson.message) {
+        return instructor_lesson;
+      }
+
+      await this.instructor_lessonRepository.save(instructor_lesson);
+      return instructor_lesson;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
   /**
    *
