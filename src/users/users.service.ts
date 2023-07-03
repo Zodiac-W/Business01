@@ -97,44 +97,48 @@ export class UsersService {
    *
    */
   async signupUser(createUserDto: CreateUserDto): Promise<any> {
-    const {
-      user_name,
-      user_email,
-      user_phone,
-      user_pass,
-      password_confirm,
-      user_img,
-      user_type,
-    } = createUserDto;
-
-    let exist: any;
     try {
-      exist = await this.getUserByEmail(user_email);
-      if (!exist.message) {
-        throw Error('This email address is already registered');
+      const {
+        user_name,
+        user_email,
+        user_phone,
+        user_pass,
+        password_confirm,
+        user_img,
+        user_type,
+      } = createUserDto;
+
+      let exist: any;
+      try {
+        exist = await this.getUserByEmail(user_email);
+        if (!exist.message) {
+          throw Error('This email address is already registered');
+        }
+        if (user_pass != password_confirm) {
+          throw Error('Your passwords does not match');
+        }
+      } catch (err) {
+        return { message: err.message };
       }
-      if (user_pass != password_confirm) {
-        throw Error('Your passwords does not match');
-      }
+
+      const salt = await bcrypt.genSalt(10);
+      const hash = await bcrypt.hash(user_pass, salt);
+
+      const user = new User();
+      user.user_name = user_name;
+      user.user_email = user_email;
+      user.user_phone = user_phone;
+      user.user_pass = hash;
+      user.user_img = user_img;
+      user.user_type = user_type;
+
+      await this.usersRepository.save(user);
+      const { user_pass: pass, ...userPassed } = user;
+
+      return userPassed;
     } catch (err) {
       return { message: err.message };
     }
-
-    const salt = await bcrypt.genSalt(10);
-    const hash = await bcrypt.hash(user_pass, salt);
-
-    const user = new User();
-    user.user_name = user_name;
-    user.user_email = user_email;
-    user.user_phone = user_phone;
-    user.user_pass = hash;
-    user.user_img = user_img;
-    user.user_type = user_type;
-
-    await this.usersRepository.save(user);
-    const { user_pass: pass, ...userPassed } = user;
-
-    return userPassed;
   }
 
   async loginUser(loginUserDto: LoginUserDto): Promise<any> {
@@ -964,13 +968,13 @@ export class UsersService {
    *
    */
   async getStudentQuizQuestions(student_quiz_id: number): Promise<any> {
-    const student_quiz_questions =
-      await this.student_quiz_questionRepository.find({
-        where: { student_quiz: { id: student_quiz_id } },
-        relations: ['question'],
-      });
-
     try {
+      const student_quiz_questions =
+        await this.student_quiz_questionRepository.find({
+          where: { student_quiz: { id: student_quiz_id } },
+          relations: ['question'],
+        });
+
       if (student_quiz_questions.length < 1) {
         return { message: "This student didn't answer any question yet" };
       }
@@ -1009,53 +1013,57 @@ export class UsersService {
   async setStudentQuizQuestion(
     createStudentQuizQuestionDto: CreateStudentQuizQuestionDto,
   ): Promise<any> {
-    let {
-      student_quiz_id,
-      question_id,
-      answer_id,
-      student_quiz_question_answer_txt,
-      student_quiz_question_is_correct,
-    } = createStudentQuizQuestionDto;
-
-    const exist = await this.getStudentQuizQuestion(
-      student_quiz_id,
-      question_id,
-    );
-    if (!exist.message) {
-      return {
-        message: 'The answer to this question has already been submitted',
-      };
-    }
-
     try {
-      const student_quiz = await this.getStudentQuizById(student_quiz_id);
-      const question = await this.questionsServce.getQuestion(question_id);
-      const answer = await this.questionsServce.getAnswer(answer_id);
+      let {
+        student_quiz_id,
+        question_id,
+        answer_id,
+        student_quiz_question_answer_txt,
+        student_quiz_question_is_correct,
+      } = createStudentQuizQuestionDto;
 
-      const is_correct = await this.answerAutoReview(question, answer);
-
-      if (is_correct === null) {
-        student_quiz_question_is_correct = null;
-      } else if (is_correct === true) {
-        student_quiz_question_is_correct = true;
-        student_quiz.student_quiz_score += question.question_score;
-        await this.student_quizRepository.save(student_quiz);
-      } else if (is_correct === false) {
-        student_quiz_question_is_correct = false;
+      const exist = await this.getStudentQuizQuestion(
+        student_quiz_id,
+        question_id,
+      );
+      if (!exist.message) {
+        return {
+          message: 'The answer to this question has already been submitted',
+        };
       }
 
-      const student_quiz_question = new Student_quiz_question();
-      student_quiz_question.student_quiz = student_quiz;
-      student_quiz_question.question = question;
-      student_quiz_question.answer = answer;
+      try {
+        const student_quiz = await this.getStudentQuizById(student_quiz_id);
+        const question = await this.questionsServce.getQuestion(question_id);
+        const answer = await this.questionsServce.getAnswer(answer_id);
 
-      student_quiz_question.student_quiz_question_answer_txt =
-        student_quiz_question_answer_txt;
-      student_quiz_question.student_quiz_question_is_correct =
-        student_quiz_question_is_correct;
+        const is_correct = await this.answerAutoReview(question, answer);
 
-      await this.student_quiz_questionRepository.save(student_quiz_question);
-      return student_quiz_question;
+        if (is_correct === null) {
+          student_quiz_question_is_correct = null;
+        } else if (is_correct === true) {
+          student_quiz_question_is_correct = true;
+          student_quiz.student_quiz_score += question.question_score;
+          await this.student_quizRepository.save(student_quiz);
+        } else if (is_correct === false) {
+          student_quiz_question_is_correct = false;
+        }
+
+        const student_quiz_question = new Student_quiz_question();
+        student_quiz_question.student_quiz = student_quiz;
+        student_quiz_question.question = question;
+        student_quiz_question.answer = answer;
+
+        student_quiz_question.student_quiz_question_answer_txt =
+          student_quiz_question_answer_txt;
+        student_quiz_question.student_quiz_question_is_correct =
+          student_quiz_question_is_correct;
+
+        await this.student_quiz_questionRepository.save(student_quiz_question);
+        return student_quiz_question;
+      } catch (err) {
+        return { message: err.message };
+      }
     } catch (err) {
       return { message: err.message };
     }
@@ -1065,47 +1073,55 @@ export class UsersService {
     student_quiz_id: number,
     question_id: number,
   ): Promise<any> {
-    const student_quiz_question = await this.getStudentQuizQuestion(
-      student_quiz_id,
-      question_id,
-    );
+    try {
+      const student_quiz_question = await this.getStudentQuizQuestion(
+        student_quiz_id,
+        question_id,
+      );
 
-    if (student_quiz_question.message) {
+      if (student_quiz_question.message) {
+        return student_quiz_question;
+      }
+
+      await this.student_quiz_questionRepository.softDelete(
+        student_quiz_question.id,
+      );
       return student_quiz_question;
+    } catch (err) {
+      return { message: err.message };
     }
-
-    await this.student_quiz_questionRepository.softDelete(
-      student_quiz_question.id,
-    );
-    return student_quiz_question;
   }
 
   async updateStudentQuizQuestion(
     student_quiz_id: number,
     updateStudentQuizQuestionDto: UpdateStudentQuizQuestionDto,
   ): Promise<any> {
-    const { question_id } = updateStudentQuizQuestionDto;
-    let student_quiz_question = await this.getStudentQuizQuestion(
-      student_quiz_id,
-      question_id,
-    );
+    try {
+      const { question_id } = updateStudentQuizQuestionDto;
+      let student_quiz_question = await this.getStudentQuizQuestion(
+        student_quiz_id,
+        question_id,
+      );
 
-    if (student_quiz_question.message) {
+      if (student_quiz_question.message) {
+        return student_quiz_question;
+      }
+      // HERE WE SHOULD CHECK IF THERE IS NEW ANSWER WE SHOULD
+      // TRY TO AUTO REVIEW IT
+      if (updateStudentQuizQuestionDto.answer_id) {
+        console.log('NEW ANSWER');
+      }
+
+      student_quiz_question = {
+        ...student_quiz_question,
+        ...updateStudentQuizQuestionDto,
+      };
+
+      await this.student_quiz_questionRepository.save(student_quiz_question);
       return student_quiz_question;
+    } catch (err) {
+      return { message: err.message };
     }
-    // HERE WE SHOULD CHECK IF THERE IS NEW ANSWER WE SHOULD
-    // TRY TO AUTO REVIEW IT
-    if (updateStudentQuizQuestionDto.answer_id) {
-      console.log('NEW ANSWER');
-    }
-
-    student_quiz_question = {
-      ...student_quiz_question,
-      ...updateStudentQuizQuestionDto,
-    };
-
-    await this.student_quiz_questionRepository.save(student_quiz_question);
-    return student_quiz_question;
   }
   /**
    *
