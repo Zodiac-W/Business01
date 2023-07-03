@@ -29,13 +29,13 @@ export class User {
   @Column()
   user_email: string;
 
-  @Column()
+  @Column({ default: null })
   user_phone: string;
 
   @Column()
   user_pass: string;
 
-  @Column()
+  @Column({ default: null })
   user_img: string;
 
   @Column({ type: 'enum', enum: UserType, default: UserType.STUDENT_USER })
