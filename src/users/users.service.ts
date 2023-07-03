@@ -236,20 +236,31 @@ export class UsersService {
   }
 
   async getUserByEmail(email: string): Promise<any> {
-    const user = await this.usersRepository.findOne({
-      where: { user_email: email },
-    });
-    if (!user) {
-      return { message: 'User not found' };
+    try {
+      const user = await this.usersRepository.findOne({
+        where: { user_email: email },
+      });
+      if (!user) {
+        return { message: 'User not found' };
+      }
+      return user;
+    } catch (err) {
+      return { message: err.message };
     }
-    return user;
   }
 
   async getUserByPhone(phone: string): Promise<any> {
-    const user = await this.usersRepository.findOne({
-      where: { user_phone: phone },
-    });
-    return user;
+    try {
+      const user = await this.usersRepository.findOne({
+        where: { user_phone: phone },
+      });
+      if (!user) {
+        return { message: 'User not found' };
+      }
+      return user;
+    } catch (err) {
+      return { message: err.message };
+    }
   }
   /**
    *
