@@ -126,31 +126,39 @@ export class LessonsService {
    *
    */
   async getLessonClass(id: number): Promise<any> {
-    const lesson = await this.lessonRepository.findOne({
-      where: { id },
-      relations: ['lesson_meta'],
-    });
+    try {
+      const lesson = await this.lessonRepository.findOne({
+        where: { id },
+        relations: ['lesson_meta'],
+      });
 
-    const meta = lesson.lesson_meta;
-    const classes = meta.map((item) => {
-      if (item.meta_key == 'class') {
-        return { class: item.meta_value };
-      }
-    });
+      const meta = lesson.lesson_meta;
+      const classes = meta.map((item) => {
+        if (item.meta_key == 'class') {
+          return { class: item.meta_value };
+        }
+      });
 
-    return classes;
+      return classes;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async setLessonClass(id: number, className: string): Promise<any> {
-    const lesson = await this.getLesson(id);
+    try {
+      const lesson = await this.getLesson(id);
 
-    const lesson_meta = new Lesson_meta();
-    lesson_meta.meta_key = 'class';
-    lesson_meta.meta_value = className;
-    lesson_meta.lesson = lesson;
+      const lesson_meta = new Lesson_meta();
+      lesson_meta.meta_key = 'class';
+      lesson_meta.meta_value = className;
+      lesson_meta.lesson = lesson;
 
-    await this.lesson_metaRepository.save(lesson_meta);
-    return lesson_meta;
+      await this.lesson_metaRepository.save(lesson_meta);
+      return lesson_meta;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
   /**
    *
@@ -160,24 +168,32 @@ export class LessonsService {
    *
    */
   async getLessonMeta(id: number): Promise<any> {
-    const lesson = await this.lessonRepository.findOne({
-      where: { id },
-      relations: ['lesson_meta'],
-    });
-    const meta = lesson.lesson_meta;
-    return meta;
+    try {
+      const lesson = await this.lessonRepository.findOne({
+        where: { id },
+        relations: ['lesson_meta'],
+      });
+      const meta = lesson.lesson_meta;
+      return meta;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async setLessonMeta(id: number, key: string, value: any): Promise<any> {
-    const lesson = await this.getLesson(id);
+    try {
+      const lesson = await this.getLesson(id);
 
-    const lesson_meta = new Lesson_meta();
-    lesson_meta.meta_key = key;
-    lesson_meta.meta_value = value;
-    lesson_meta.lesson = lesson;
+      const lesson_meta = new Lesson_meta();
+      lesson_meta.meta_key = key;
+      lesson_meta.meta_value = value;
+      lesson_meta.lesson = lesson;
 
-    await this.lesson_metaRepository.save(lesson_meta);
-    return lesson_meta;
+      await this.lesson_metaRepository.save(lesson_meta);
+      return lesson_meta;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
   /**
    *
@@ -186,18 +202,22 @@ export class LessonsService {
    *
    */
   async getLessonInstructor(id: number): Promise<any> {
-    const lesson = await this.lessonRepository.findOne({
-      where: { id },
-      relations: ['instructor_lesson', 'instructor_lesson.user'],
-    });
-    const instructor_lesson = lesson.instructor_lesson;
+    try {
+      const lesson = await this.lessonRepository.findOne({
+        where: { id },
+        relations: ['instructor_lesson', 'instructor_lesson.user'],
+      });
+      const instructor_lesson = lesson.instructor_lesson;
 
-    const instructor = instructor_lesson.map((item) => {
-      return item.user;
-    });
-    if (instructor.length < 1) {
-      return { message: 'SUPERUSER' };
+      const instructor = instructor_lesson.map((item) => {
+        return item.user;
+      });
+      if (instructor.length < 1) {
+        return { message: 'SUPERUSER' };
+      }
+      return instructor;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-    return instructor;
   }
 }
