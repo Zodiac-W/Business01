@@ -379,7 +379,8 @@ export class UsersService {
       await this.user_roleRepository.save(user_role);
       return user_role;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -397,7 +398,8 @@ export class UsersService {
       const role = user_role.role;
       return role;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -415,7 +417,8 @@ export class UsersService {
       await this.user_roleRepository.softDelete(user_role.id);
       return user_role;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -430,7 +433,8 @@ export class UsersService {
       const new_user_role = await this.setUserRole(userId, roleId);
       return new_user_role;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
   /**
