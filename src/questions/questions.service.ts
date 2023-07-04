@@ -183,59 +183,88 @@ export class QuestionsService {
    */
 
   async createAnswer(createAnswerDto: CreateAnswerDto): Promise<any> {
-    const { answer_txt, answer_is_correct, question_id } = createAnswerDto;
-    const question = await this.getQuestion(question_id);
+    try {
+      const { answer_txt, answer_is_correct, question_id } = createAnswerDto;
+      const question = await this.getQuestion(question_id);
 
-    const answer = new Answer();
-    answer.answer_txt = answer_txt;
-    answer.answer_is_correct = answer_is_correct;
-    answer.question = question;
+      const answer = new Answer();
+      answer.answer_txt = answer_txt;
+      answer.answer_is_correct = answer_is_correct;
+      answer.question = question;
 
-    await this.answerRepository.save(answer);
-    return answer;
+      await this.answerRepository.save(answer);
+      return answer;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async getAllAnswers(): Promise<any> {
-    const answers = await this.answerRepository.find({
-      relations: ['question'],
-    });
-    return answers;
+    try {
+      const answers = await this.answerRepository.find({
+        relations: ['question'],
+      });
+
+      if (answers.length < 1) {
+        throw new Error('There is not answers');
+      }
+
+      return answers;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async getAllAnswersTxt(): Promise<any> {
-    const titles = await this.answerRepository.find({
-      select: ['answer_txt'],
-    });
-    const asnwerTitles = titles.map((title) => {
-      return { answer_txt: title };
-    });
-    return asnwerTitles;
+    try {
+      const titles = await this.answerRepository.find({
+        select: ['answer_txt'],
+      });
+      const asnwerTitles = titles.map((title) => {
+        return { answer_txt: title };
+      });
+      return asnwerTitles;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async getAnswer(id: number): Promise<any> {
-    const answer = await this.answerRepository.findOne({ where: { id } });
-    if (!answer) {
-      throw Error('Answer doesn\t exist');
+    try {
+      const answer = await this.answerRepository.findOne({ where: { id } });
+      if (!answer) {
+        throw Error('Answer doesn\t exist');
+      }
+      return answer;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-    return answer;
   }
 
   async deleteAnswer(id: number): Promise<any> {
-    const answer = await this.getAnswer(id);
+    try {
+      const answer = await this.getAnswer(id);
 
-    await this.answerRepository.softDelete(id);
-    return answer;
+      await this.answerRepository.softDelete(id);
+      return answer;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async updateAnswer(
     id: number,
     updateAnswerDto: UpdateAnswerDto,
   ): Promise<any> {
-    let answer = await this.getAnswer(id);
-    answer = { ...answer, ...updateAnswerDto };
+    try {
+      let answer = await this.getAnswer(id);
+      answer = { ...answer, ...updateAnswerDto };
 
-    await this.answerRepository.save(answer);
-    return answer;
+      await this.answerRepository.save(answer);
+      return answer;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   /**
