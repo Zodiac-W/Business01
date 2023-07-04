@@ -125,24 +125,32 @@ export class QuestionsService {
    *
    */
   async getQuestionMeta(id: number): Promise<any> {
-    const question = await this.questionRepository.findOne({
-      where: { id },
-      relations: ['question_meta'],
-    });
-    const meta = question.question_meta;
-    return meta;
+    try {
+      const question = await this.questionRepository.findOne({
+        where: { id },
+        relations: ['question_meta'],
+      });
+      const meta = question.question_meta;
+      return meta;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async setQuestionMeta(id: number, key: string, value: any): Promise<any> {
-    const question = await this.getQuestion(id);
+    try {
+      const question = await this.getQuestion(id);
 
-    const question_meta = new Question_meta();
-    question_meta.meta_key = key;
-    question_meta.meta_value = value;
-    question_meta.question = question;
+      const question_meta = new Question_meta();
+      question_meta.meta_key = key;
+      question_meta.meta_value = value;
+      question_meta.question = question;
 
-    await this.question_metaRepository.save(question_meta);
-    return question_meta;
+      await this.question_metaRepository.save(question_meta);
+      return question_meta;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
   /**
    *
@@ -151,12 +159,16 @@ export class QuestionsService {
    *
    */
   async getQuestionType(id: number): Promise<any> {
-    const question = await this.questionRepository.findOne({
-      where: { id },
-      select: ['question_type'],
-    });
+    try {
+      const question = await this.questionRepository.findOne({
+        where: { id },
+        select: ['question_type'],
+      });
 
-    return question;
+      return question;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
   /**
    *
