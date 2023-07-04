@@ -72,6 +72,12 @@ export class UsersController {
     return this.usersService.getAllUserNames();
   }
 
+  @ApiOperation({ summary: 'Get current user data' })
+  @ApiResponse({
+    status: 200,
+    description: 'The current user data',
+    type: CreateUserDto,
+  })
   @UseGuards(JwtAuthGuard)
   @Get('/me')
   getMe(@User() user: any) {
