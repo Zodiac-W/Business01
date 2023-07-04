@@ -489,12 +489,12 @@ export class CoursesService {
       });
 
       if (course_discusion.length < 1) {
-        return { message: "This course doesn't have any discussions yet" };
+        throw new Error("This course doesn't have any discussions yet");
       }
 
       return course_discusion;
     } catch (err) {
-      return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -509,12 +509,12 @@ export class CoursesService {
       });
 
       if (!course_discusion) {
-        return { message: "This course doesn't have this discussion" };
+        throw new Error("This course doesn't have this discussion");
       }
 
       return course_discusion;
     } catch (err) {
-      return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -522,32 +522,40 @@ export class CoursesService {
     course_id: number,
     discusion_id: number,
   ): Promise<any> {
-    const course = await this.getCourse(course_id);
-    const discusion = await this.discusionService.getDiscusion(discusion_id);
+    try {
+      const course = await this.getCourse(course_id);
+      const discusion = await this.discusionService.getDiscusion(discusion_id);
 
-    const course_discusion = new Course_discusion();
-    course_discusion.course = course;
-    course_discusion.discusion = discusion;
+      const course_discusion = new Course_discusion();
+      course_discusion.course = course;
+      course_discusion.discusion = discusion;
 
-    await this.course_discusionRepository.save(course_discusion);
-    return course_discusion;
+      await this.course_discusionRepository.save(course_discusion);
+      return course_discusion;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async deleteCourseDiscusion(
     course_id: number,
     discusion_id: number,
   ): Promise<any> {
-    const course_discusion = await this.getCourseDiscusion(
-      course_id,
-      discusion_id,
-    );
+    try {
+      const course_discusion = await this.getCourseDiscusion(
+        course_id,
+        discusion_id,
+      );
 
-    if (course_discusion.message) {
+      if (course_discusion.message) {
+        return course_discusion;
+      }
+
+      await this.course_discusionRepository.softDelete(course_discusion.id);
       return course_discusion;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-
-    await this.course_discusionRepository.softDelete(course_discusion.id);
-    return course_discusion;
   }
 
   async updateCourseDiscusion(
@@ -555,20 +563,24 @@ export class CoursesService {
     discusion_id_old: number,
     discusion_id_new: number,
   ): Promise<any> {
-    const course_discusion = await this.getCourseDiscusion(
-      course_id,
-      discusion_id_old,
-    );
+    try {
+      const course_discusion = await this.getCourseDiscusion(
+        course_id,
+        discusion_id_old,
+      );
 
-    if (course_discusion.message) {
-      return course_discusion;
+      if (course_discusion.message) {
+        return course_discusion;
+      }
+
+      await this.course_discusionRepository.softDelete(course_discusion.id);
+      const new_course_discusion = await this.setCourseDiscusion(
+        course_id,
+        discusion_id_new,
+      );
+      return new_course_discusion;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-
-    await this.course_discusionRepository.softDelete(course_discusion.id);
-    const new_course_discusion = await this.setCourseDiscusion(
-      course_id,
-      discusion_id_new,
-    );
-    return new_course_discusion;
   }
 }
