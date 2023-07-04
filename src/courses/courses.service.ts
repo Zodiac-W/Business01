@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateLessonDto } from 'src/lessons/dto/create-lesson-dto';
 import { LessonsService } from 'src/lessons/lessons.service';
@@ -50,59 +50,92 @@ export class CoursesService {
    *
    */
   async createCourse(createCourseDto: CreateCourseDto): Promise<any> {
-    const { course_title, course_description, course_duration, course_status } =
-      createCourseDto;
+    try {
+      const {
+        course_title,
+        course_description,
+        course_duration,
+        course_status,
+      } = createCourseDto;
 
-    const course = new Course();
-    course.course_title = course_title;
-    course.course_description = course_description;
-    course.course_duration = course_duration;
-    course.course_status = course_status;
+      const course = new Course();
+      course.course_title = course_title;
+      course.course_description = course_description;
+      course.course_duration = course_duration;
+      course.course_status = course_status;
 
-    await this.courseRepository.save(course);
-    return course;
+      await this.courseRepository.save(course);
+      return course;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async getAllCourses(): Promise<any> {
-    const courses = await this.courseRepository.find();
-    return courses;
+    try {
+      const courses = await this.courseRepository.find();
+
+      if (courses.length < 1) {
+        throw new Error('There is not courses');
+      }
+
+      return courses;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async getAllCoursesTitles(): Promise<any> {
-    const courseTitles = await this.courseRepository.find({
-      select: ['course_title'],
-    });
+    try {
+      const courseTitles = await this.courseRepository.find({
+        select: ['course_title'],
+      });
 
-    const coursesTitles = courseTitles.map((courseTitle) => {
-      return { course_title: courseTitle };
-    });
-    return coursesTitles;
+      const coursesTitles = courseTitles.map((courseTitle) => {
+        return { course_title: courseTitle };
+      });
+      return coursesTitles;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async getCourse(id: number): Promise<any> {
-    const course = await this.courseRepository.findOne({ where: { id } });
-    if (!course) {
-      throw Error('Course does not exist');
+    try {
+      const course = await this.courseRepository.findOne({ where: { id } });
+      if (!course) {
+        throw new Error('Course does not exist');
+      }
+      return course;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-    return course;
   }
 
   async deleteCourse(id: number): Promise<any> {
-    const course = await this.getCourse(id);
+    try {
+      const course = await this.getCourse(id);
 
-    await this.courseRepository.softDelete(id);
-    return course;
+      await this.courseRepository.softDelete(id);
+      return course;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async updateCourse(
     id: number,
     updateCourseDto: UpdateCourseDto,
   ): Promise<any> {
-    let course = await this.getCourse(id);
+    try {
+      let course = await this.getCourse(id);
 
-    course = { ...course, ...updateCourseDto };
-    await this.courseRepository.save(course);
-    return course;
+      course = { ...course, ...updateCourseDto };
+      await this.courseRepository.save(course);
+      return course;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
   /**
    *
@@ -112,40 +145,48 @@ export class CoursesService {
    *
    */
   async setCourseRounds(id: number, round: number): Promise<any> {
-    const course = await this.getCourse(id);
+    try {
+      const course = await this.getCourse(id);
 
-    const course_meta = new Course_meta();
-    course_meta.meta_key = 'round';
-    course_meta.course = course;
+      const course_meta = new Course_meta();
+      course_meta.meta_key = 'round';
+      course_meta.course = course;
 
-    if (round) {
-      course_meta.meta_value = round.toString();
-    } else {
-      const rounds = await this.getCourseRounds(id);
-      let round = rounds.rounds;
-      ++round;
-      course_meta.meta_value = round.toString();
+      if (round) {
+        course_meta.meta_value = round.toString();
+      } else {
+        const rounds = await this.getCourseRounds(id);
+        let round = rounds.rounds;
+        ++round;
+        course_meta.meta_value = round.toString();
+      }
+
+      await this.course_metaRepository.save(course_meta);
+      return course_meta;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-
-    await this.course_metaRepository.save(course_meta);
-    return course_meta;
   }
 
   async getCourseRounds(id: number): Promise<any> {
-    const course = await this.courseRepository.findOne({
-      where: { id },
-      relations: ['course_meta'],
-    });
+    try {
+      const course = await this.courseRepository.findOne({
+        where: { id },
+        relations: ['course_meta'],
+      });
 
-    const meta = course.course_meta;
-    const rounds = meta.map((item) => {
-      if (item.meta_key == 'round') {
-        return item.meta_value;
-      }
-    });
+      const meta = course.course_meta;
+      const rounds = meta.map((item) => {
+        if (item.meta_key == 'round') {
+          return item.meta_value;
+        }
+      });
 
-    const currentRound = rounds[rounds.length - 1];
-    return { rounds: currentRound };
+      const currentRound = rounds[rounds.length - 1];
+      return { rounds: currentRound };
+    } catch (err) {
+      throw new HttpException(err.messagem, HttpStatus.NOT_FOUND);
+    }
   }
   /**
    *
@@ -155,25 +196,33 @@ export class CoursesService {
    *
    */
   async getCourseMeta(id: number): Promise<any> {
-    const course = await this.courseRepository.findOne({
-      where: { id },
-      relations: ['course_meta'],
-    });
+    try {
+      const course = await this.courseRepository.findOne({
+        where: { id },
+        relations: ['course_meta'],
+      });
 
-    const meta = course.course_meta;
-    return meta;
+      const meta = course.course_meta;
+      return meta;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async setCourseMeta(id: number, key: string, value: any): Promise<any> {
-    const course = await this.getCourse(id);
+    try {
+      const course = await this.getCourse(id);
 
-    const course_meta = new Course_meta();
-    course_meta.meta_key = key;
-    course_meta.meta_value = value;
-    course_meta.course = course;
+      const course_meta = new Course_meta();
+      course_meta.meta_key = key;
+      course_meta.meta_value = value;
+      course_meta.course = course;
 
-    await this.course_metaRepository.save(course_meta);
-    return course_meta;
+      await this.course_metaRepository.save(course_meta);
+      return course_meta;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
   /**
    *
