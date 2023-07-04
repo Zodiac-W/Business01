@@ -276,42 +276,54 @@ export class QuestionsService {
    *
    */
   async getQuestionAnswers(id: number): Promise<any> {
-    const answers = await this.answerRepository.find({
-      where: { question: { id } },
-    });
-    if (answers.length < 1) {
-      return [{ message: "This question doesn't have a predefined answers" }];
+    try {
+      const answers = await this.answerRepository.find({
+        where: { question: { id } },
+      });
+      if (answers.length < 1) {
+        return [{ message: "This question doesn't have a predefined answers" }];
+      }
+      return answers;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-    return answers;
   }
 
   async getQuestionCorrectAnswer(id: number): Promise<any> {
-    const answers = await this.getQuestionAnswers(id);
+    try {
+      const answers = await this.getQuestionAnswers(id);
 
-    if (answers[0].message) {
-      return answers;
+      if (answers[0].message) {
+        return answers;
+      }
+      const correct = answers.find((answer) => {
+        return answer.answer_is_correct == true;
+      });
+      return correct;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-    const correct = answers.find((answer) => {
-      return answer.answer_is_correct == true;
-    });
-    return correct;
   }
 
   async checkQuestionAnswer(id: number, answerId: number): Promise<any> {
-    const question_type = await this.getQuestionType(id);
+    try {
+      const question_type = await this.getQuestionType(id);
 
-    if (question_type.question_type === QuestionType.SHORT_ANSWER) {
-      return [
-        { answer_is_correct: null },
-        { message: "This question doesn't have a predefined answers" },
-      ];
-    }
+      if (question_type.question_type === QuestionType.SHORT_ANSWER) {
+        return [
+          { answer_is_correct: null },
+          { message: "This question doesn't have a predefined answers" },
+        ];
+      }
 
-    const answer = await this.getAnswer(answerId);
-    const correct_answer = await this.getQuestionCorrectAnswer(id);
-    if (answer.id !== correct_answer.id) {
-      return [{ answer_is_correct: false }];
+      const answer = await this.getAnswer(answerId);
+      const correct_answer = await this.getQuestionCorrectAnswer(id);
+      if (answer.id !== correct_answer.id) {
+        return [{ answer_is_correct: false }];
+      }
+      return [{ answer_is_correct: true }];
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-    return [{ answer_is_correct: true }];
   }
 }
