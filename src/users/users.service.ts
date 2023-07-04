@@ -120,7 +120,8 @@ export class UsersService {
           throw Error('Your passwords does not match');
         }
       } catch (err) {
-        return { message: err.message };
+        // return { message: err.message };
+        throw new HttpException(err.message, HttpStatus.NOT_FOUND);
       }
 
       const salt = await bcrypt.genSalt(10);
@@ -166,29 +167,22 @@ export class UsersService {
         return { message: err.message };
       }
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
   async getUser(id: number): Promise<any> {
-    // try {
-    //   const user = await this.usersRepository.findOne({ where: { id } });
-    //   if (!user) {
-    //     // throw Error('User does not exist');
-    //     throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    //   }
-    //   return user;
-    // } catch (err) {
-    //   // return { message: err.message };
-    //   return err;
-    // }
-    const user = await this.usersRepository.findOne({
-      where: { id },
-    });
-    if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    try {
+      const user = await this.usersRepository.findOne({ where: { id } });
+      if (!user) {
+        throw new Error('User not found');
+      }
+      return user;
+    } catch (err) {
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-    return user;
   }
 
   async validateUser(id: number): Promise<any> {
@@ -215,7 +209,8 @@ export class UsersService {
       const users = await this.usersRepository.find();
       return users;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -229,31 +224,40 @@ export class UsersService {
       });
       return usernames;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
   async deleteUser(id: number): Promise<any> {
-    const user = await this.getUser(id);
-    if (user.message) {
+    try {
+      const user = await this.getUser(id);
+      if (user.message) {
+        return user;
+      }
+
+      await this.usersRepository.softDelete(id);
+
       return user;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-
-    await this.usersRepository.softDelete(id);
-
-    return user;
   }
 
   async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<any> {
-    let user = await this.getUser(id);
-    if (user.message) {
+    try {
+      let user = await this.getUser(id);
+      if (user.message) {
+        return user;
+      }
+
+      user = { ...user, ...updateUserDto };
+      await this.usersRepository.save(user);
+
       return user;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-
-    user = { ...user, ...updateUserDto };
-    await this.usersRepository.save(user);
-
-    return user;
   }
 
   async getUserByEmail(email: string): Promise<any> {
@@ -266,7 +270,8 @@ export class UsersService {
       }
       return user;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -280,7 +285,8 @@ export class UsersService {
       }
       return user;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
   /**
