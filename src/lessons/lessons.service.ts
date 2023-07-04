@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Instructor_lesson } from 'src/users/entities/instructor-lesson.entity';
 import { Repository } from 'typeorm';
@@ -19,69 +19,112 @@ export class LessonsService {
     @InjectRepository(Instructor_lesson)
     private instructor_lessonRepository: Repository<Instructor_lesson>,
   ) {}
-
+  /**
+   *
+   * LESSON
+   * GET ALL LESSONS
+   * GET ALL LESSONS' TITLES
+   * GET ONE LESSON
+   * SET NEW LESSON
+   * DELETE LESSON
+   * UPDATE LESSON
+   *
+   */
   async createLesson(createLessonDto: CreateLessonDto): Promise<any> {
-    const {
-      lesson_title,
-      lesson_description,
-      lesson_content,
-      lesson_duration,
-      lesson_status,
-    } = createLessonDto;
+    try {
+      const {
+        lesson_title,
+        lesson_description,
+        lesson_content,
+        lesson_duration,
+        lesson_status,
+      } = createLessonDto;
 
-    const lesson = new Lesson();
-    lesson.lesson_title = lesson_title;
-    lesson.lesson_description = lesson_description;
-    lesson.lesson_content = lesson_content;
-    lesson.lesson_duration = lesson_duration;
-    lesson.lesson_status = lesson_status;
+      const lesson = new Lesson();
+      lesson.lesson_title = lesson_title;
+      lesson.lesson_description = lesson_description;
+      lesson.lesson_content = lesson_content;
+      lesson.lesson_duration = lesson_duration;
+      lesson.lesson_status = lesson_status;
 
-    await this.lessonRepository.save(lesson);
-    return lesson;
+      await this.lessonRepository.save(lesson);
+      return lesson;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async getAllLessons(): Promise<any> {
-    const lessons = await this.lessonRepository.find();
-    return lessons;
+    try {
+      const lessons = await this.lessonRepository.find();
+      if (lessons.length < 1) {
+        throw new Error('There is no lessons');
+      }
+      return lessons;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async getAllLessonsTitles(): Promise<any> {
-    const titles = await this.lessonRepository.find({
-      select: ['lesson_title'],
-    });
+    try {
+      const titles = await this.lessonRepository.find({
+        select: ['lesson_title'],
+      });
 
-    const lessonTitles = titles.map((title) => {
-      return { lesson_title: title };
-    });
-    return lessonTitles;
+      const lessonTitles = titles.map((title) => {
+        return { lesson_title: title };
+      });
+      return lessonTitles;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async getLesson(id: number): Promise<any> {
-    const lesson = await this.lessonRepository.findOne({ where: { id } });
-    if (!lesson) {
-      throw Error("Lesson doesn't exist");
+    try {
+      const lesson = await this.lessonRepository.findOne({ where: { id } });
+      if (!lesson) {
+        throw Error("Lesson doesn't exist");
+      }
+      return lesson;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-    return lesson;
   }
 
   async deleteLesson(id: number): Promise<any> {
-    const lesson = await this.getLesson(id);
+    try {
+      const lesson = await this.getLesson(id);
 
-    await this.lessonRepository.softDelete(id);
-    return lesson;
+      await this.lessonRepository.softDelete(id);
+      return lesson;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async updateLesson(
     id: number,
     updateLessonDto: UpdateLessonDto,
   ): Promise<any> {
-    let lesson = await this.getLesson(id);
+    try {
+      let lesson = await this.getLesson(id);
 
-    lesson = { ...lesson, ...updateLessonDto };
-    await this.lessonRepository.save(lesson);
-    return lesson;
+      lesson = { ...lesson, ...updateLessonDto };
+      await this.lessonRepository.save(lesson);
+      return lesson;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
-
+  /**
+   *
+   * LESSON
+   * GET LESSON CLASS
+   * SET LESSON CLASS
+   *
+   */
   async getLessonClass(id: number): Promise<any> {
     const lesson = await this.lessonRepository.findOne({
       where: { id },
@@ -109,7 +152,13 @@ export class LessonsService {
     await this.lesson_metaRepository.save(lesson_meta);
     return lesson_meta;
   }
-
+  /**
+   *
+   * LESSON - META
+   * GET LESSON META
+   * SET LESSON META
+   *
+   */
   async getLessonMeta(id: number): Promise<any> {
     const lesson = await this.lessonRepository.findOne({
       where: { id },
@@ -130,7 +179,12 @@ export class LessonsService {
     await this.lesson_metaRepository.save(lesson_meta);
     return lesson_meta;
   }
-
+  /**
+   *
+   * LESSON
+   * GET LESSON INSTRUCTOR
+   *
+   */
   async getLessonInstructor(id: number): Promise<any> {
     const lesson = await this.lessonRepository.findOne({
       where: { id },
