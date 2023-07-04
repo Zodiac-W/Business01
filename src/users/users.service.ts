@@ -295,17 +295,21 @@ export class UsersService {
    *
    */
   async setUserNickname(nickname: string, id: number): Promise<any> {
-    const user = await this.getUser(id);
-    if (user.message) {
-      return user;
-    }
+    try {
+      const user = await this.getUser(id);
+      if (user.message) {
+        return user;
+      }
 
-    const user_meta = new User_meta();
-    user_meta.meta_key = 'nickname';
-    user_meta.meta_value = nickname;
-    user_meta.user = user;
-    await this.user_metaRepository.save(user_meta);
-    return user_meta;
+      const user_meta = new User_meta();
+      user_meta.meta_key = 'nickname';
+      user_meta.meta_value = nickname;
+      user_meta.user = user;
+      await this.user_metaRepository.save(user_meta);
+      return user_meta;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
   /**
    *
@@ -325,23 +329,28 @@ export class UsersService {
       const meta = user.user_meta;
       return meta;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
   async setUserMeta(id: number, key: string, value: string): Promise<any> {
-    const user = await this.getUser(id);
-    if (user.message) {
-      return user;
+    try {
+      const user = await this.getUser(id);
+      if (user.message) {
+        return user;
+      }
+
+      const user_meta = new User_meta();
+      user_meta.meta_key = key;
+      user_meta.meta_value = value;
+      user_meta.user = user;
+
+      await this.user_metaRepository.save(user_meta);
+      return user_meta;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-
-    const user_meta = new User_meta();
-    user_meta.meta_key = key;
-    user_meta.meta_value = value;
-    user_meta.user = user;
-
-    await this.user_metaRepository.save(user_meta);
-    return user_meta;
   }
   /**
    *
