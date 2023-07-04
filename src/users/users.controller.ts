@@ -72,6 +72,12 @@ export class UsersController {
     return this.usersService.getAllUserNames();
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('/me')
+  getMe(@User() user: any) {
+    return this.usersService.getUser(user.userId);
+  }
+
   @ApiOperation({ summary: 'Get user by email address' })
   @ApiBearerAuth()
   @ApiResponse({
