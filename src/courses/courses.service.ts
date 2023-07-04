@@ -352,23 +352,27 @@ export class CoursesService {
    *
    */
   async getCourseInstructor(id: number): Promise<any> {
-    const course = await this.courseRepository.findOne({
-      where: { id },
-      relations: ['instructor_course', 'instructor_course.user'],
-    });
+    try {
+      const course = await this.courseRepository.findOne({
+        where: { id },
+        relations: ['instructor_course', 'instructor_course.user'],
+      });
 
-    const instructor_course = course.instructor_course;
-    // const instructor = instructor_course.find((item)=>)
-    // TEST THE ENDPOINT RETURN THEN COMPLETE THE ARRAY FUNCTION
-    // IF NULL THEN IT IS SUPERUSER
+      const instructor_course = course.instructor_course;
+      // const instructor = instructor_course.find((item)=>)
+      // TEST THE ENDPOINT RETURN THEN COMPLETE THE ARRAY FUNCTION
+      // IF NULL THEN IT IS SUPERUSER
 
-    const instructor = instructor_course.map((item) => {
-      return item.user;
-    });
-    if (instructor.length < 1) {
-      return { message: 'SUPERUSER' };
+      const instructor = instructor_course.map((item) => {
+        return item.user;
+      });
+      if (instructor.length < 1) {
+        return { message: 'SUPERUSER' };
+      }
+      return instructor;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-    return instructor;
   }
   /**
    *
@@ -388,11 +392,11 @@ export class CoursesService {
       });
 
       if (course_quizzes.length < 1) {
-        return { message: "This course doesn't have any quizzes" };
+        throw new Error("This course doesn't have any quizzes");
       }
       return course_quizzes;
     } catch (err) {
-      return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -408,36 +412,44 @@ export class CoursesService {
       });
 
       if (!course_quiz) {
-        return { message: "This course doesn't have this quiz" };
+        throw new Error("This course doesn't have this quiz");
       }
 
       return course_quiz;
     } catch (err) {
-      return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
   async setCourseQuiz(course_id: number, quiz_id: number): Promise<any> {
-    const course = await this.getCourse(course_id);
-    const quiz = await this.quizzesService.getQuiz(quiz_id);
+    try {
+      const course = await this.getCourse(course_id);
+      const quiz = await this.quizzesService.getQuiz(quiz_id);
 
-    const course_quiz = new Course_quiz();
-    course_quiz.course = course;
-    course_quiz.quiz = quiz;
+      const course_quiz = new Course_quiz();
+      course_quiz.course = course;
+      course_quiz.quiz = quiz;
 
-    await this.course_quizRepository.save(course_quiz);
-    return course_quiz;
+      await this.course_quizRepository.save(course_quiz);
+      return course_quiz;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async deleteCourseQuiz(course_id: number, quiz_id: number): Promise<any> {
-    const course_quiz = await this.getCourseQuiz(course_id, quiz_id);
+    try {
+      const course_quiz = await this.getCourseQuiz(course_id, quiz_id);
 
-    if (course_quiz.message) {
+      if (course_quiz.message) {
+        return course_quiz;
+      }
+
+      await this.course_quizRepository.softDelete(course_quiz.id);
       return course_quiz;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-
-    await this.course_quizRepository.softDelete(course_quiz.id);
-    return course_quiz;
   }
 
   async updateCourseQuiz(
@@ -445,15 +457,19 @@ export class CoursesService {
     quiz_id_old: number,
     quiz_id_new: number,
   ): Promise<any> {
-    const course_quiz = await this.getCourseQuiz(course_id, quiz_id_old);
+    try {
+      const course_quiz = await this.getCourseQuiz(course_id, quiz_id_old);
 
-    if (course_quiz.message) {
-      return course_quiz;
+      if (course_quiz.message) {
+        return course_quiz;
+      }
+
+      await this.deleteCourseQuiz(course_id, quiz_id_old);
+      const new_course_quiz = await this.setCourseQuiz(course_id, quiz_id_new);
+      return new_course_quiz;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-
-    await this.deleteCourseQuiz(course_id, quiz_id_old);
-    const new_course_quiz = await this.setCourseQuiz(course_id, quiz_id_new);
-    return new_course_quiz;
   }
   /**
    *
