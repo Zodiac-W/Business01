@@ -235,18 +235,17 @@ export class CoursesService {
    *
    */
   async getCourseLessons(id: number): Promise<any> {
-    const course_lessons = await this.course_lessonRepository.find({
-      where: { course: { id } },
-      relations: ['course', 'lesson'],
-    });
-
     try {
+      const course_lessons = await this.course_lessonRepository.find({
+        where: { course: { id } },
+        relations: ['course', 'lesson'],
+      });
       if (course_lessons.length < 1) {
-        return { message: "This course doesn't have lessons" };
+        throw new Error("This course doesn't have lessons");
       }
       return course_lessons;
     } catch (err) {
-      return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -262,51 +261,63 @@ export class CoursesService {
       });
 
       if (!course_lesson) {
-        return { message: "This lesson doesn't exist in this course" };
+        throw new Error("This lesson doesn't exist in this course");
       }
 
       return course_lesson;
     } catch (err) {
-      return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
   async setCourseLesson(course_id: number, lesson_id: number): Promise<any> {
-    const course = await this.getCourse(course_id);
-    const lesson = await this.lessonsService.getLesson(lesson_id);
+    try {
+      const course = await this.getCourse(course_id);
+      const lesson = await this.lessonsService.getLesson(lesson_id);
 
-    const course_lesson = new Course_lesson();
-    course_lesson.course = course;
-    course_lesson.lesson = lesson;
+      const course_lesson = new Course_lesson();
+      course_lesson.course = course;
+      course_lesson.lesson = lesson;
 
-    await this.course_lessonRepository.save(course_lesson);
-    return course_lesson;
+      await this.course_lessonRepository.save(course_lesson);
+      return course_lesson;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async createCourseLesson(
     id: number,
     createLessonDto: CreateLessonDto,
   ): Promise<any> {
-    const course = await this.getCourse(id);
-    const lesson = await this.lessonsService.createLesson(createLessonDto);
+    try {
+      const course = await this.getCourse(id);
+      const lesson = await this.lessonsService.createLesson(createLessonDto);
 
-    const course_lesson = new Course_lesson();
-    course_lesson.course = course;
-    course_lesson.lesson = lesson;
+      const course_lesson = new Course_lesson();
+      course_lesson.course = course;
+      course_lesson.lesson = lesson;
 
-    await this.course_lessonRepository.save(course_lesson);
-    return course_lesson;
+      await this.course_lessonRepository.save(course_lesson);
+      return course_lesson;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async deleteCourseLesson(course_id: number, lesson_id: number): Promise<any> {
-    const course_lesson = await this.getCourseLesson(course_id, lesson_id);
+    try {
+      const course_lesson = await this.getCourseLesson(course_id, lesson_id);
 
-    if (course_lesson.message) {
+      if (course_lesson.message) {
+        return course_lesson;
+      }
+
+      await this.course_lessonRepository.softDelete(course_lesson.id);
       return course_lesson;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-
-    await this.course_lessonRepository.softDelete(course_lesson.id);
-    return course_lesson;
   }
 
   async updateCourseLesson(
@@ -314,18 +325,25 @@ export class CoursesService {
     lesson_id_old: number,
     lesson_id_new: number,
   ): Promise<any> {
-    const course_lesson = await this.getCourseLesson(course_id, lesson_id_old);
+    try {
+      const course_lesson = await this.getCourseLesson(
+        course_id,
+        lesson_id_old,
+      );
 
-    if (course_lesson.message) {
-      return course_lesson;
+      if (course_lesson.message) {
+        return course_lesson;
+      }
+
+      await this.deleteCourseLesson(course_id, lesson_id_old);
+      const new_course_lesson = await this.setCourseLesson(
+        course_id,
+        lesson_id_new,
+      );
+      return new_course_lesson;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-
-    await this.deleteCourseLesson(course_id, lesson_id_old);
-    const new_course_lesson = await this.setCourseLesson(
-      course_id,
-      lesson_id_new,
-    );
-    return new_course_lesson;
   }
   /**
    *
