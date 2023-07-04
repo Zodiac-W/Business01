@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateAnswerDto } from './dto/create-answr-dto';
@@ -24,67 +24,104 @@ export class QuestionsService {
   ) {}
   /**
    *
-   * QUESTIONS - CRUD && GET ALL/ ALL TXT
+   * QUESTIONS
+   * GET ALL QUESIONS
+   * GET ALL QUESTIONS TITLES
+   * GET ONE QUESTION
+   * SET NEW QUESTION
+   * DELETE QUESTION
+   * UPDATE QUESTION
    *
    */
   async createQuestion(createQuestionDto: CreateQuestionDto): Promise<any> {
-    const { question_txt, question_type, question_score } = createQuestionDto;
+    try {
+      const { question_txt, question_type, question_score } = createQuestionDto;
 
-    const question = new Question();
-    question.question_txt = question_txt;
-    question.question_type = question_type;
-    question.question_score = question_score;
+      const question = new Question();
+      question.question_txt = question_txt;
+      question.question_type = question_type;
+      question.question_score = question_score;
 
-    await this.questionRepository.save(question);
-    return question;
+      await this.questionRepository.save(question);
+      return question;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async getAllQuestions(): Promise<any> {
-    const questions = await this.questionRepository.find();
-    return questions;
+    try {
+      const questions = await this.questionRepository.find();
+
+      if (questions.length < 1) {
+        throw new Error('There is no quesions yet');
+      }
+
+      return questions;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async getAllQuestionsTxt(): Promise<any> {
-    const titles = await this.questionRepository.find({
-      select: ['question_txt'],
-    });
-    const questionsTxt = titles.map((title) => {
-      return { question_txt: title };
-    });
-    return questionsTxt;
+    try {
+      const titles = await this.questionRepository.find({
+        select: ['question_txt'],
+      });
+      const questionsTxt = titles.map((title) => {
+        return { question_txt: title };
+      });
+      return questionsTxt;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async getQuestion(id: number): Promise<any> {
-    const question = await this.questionRepository.findOne({
-      where: { id },
-    });
+    try {
+      const question = await this.questionRepository.findOne({
+        where: { id },
+      });
 
-    if (!question) {
-      throw Error("Question doesn't exist");
+      if (!question) {
+        throw Error("Question doesn't exist");
+      }
+      return question;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-    return question;
   }
 
   async deleteQuestion(id: number): Promise<any> {
-    const question = this.getQuestion(id);
+    try {
+      const question = this.getQuestion(id);
 
-    await this.questionRepository.softDelete(id);
-    return question;
+      await this.questionRepository.softDelete(id);
+      return question;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async updateQuestion(
     id: number,
     updateQuestionDto: UpdateQuestionDto,
   ): Promise<any> {
-    let question = await this.getQuestion(id);
+    try {
+      let question = await this.getQuestion(id);
 
-    question = { ...question, ...updateQuestionDto };
-    await this.questionRepository.save(question);
-    return question;
+      question = { ...question, ...updateQuestionDto };
+      await this.questionRepository.save(question);
+      return question;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
   /**
    *
    * QUESTIONS - META
+   * GET QUESTIONS META
+   * SET QUESTIONS META
    *
    */
   async getQuestionMeta(id: number): Promise<any> {
@@ -95,11 +132,7 @@ export class QuestionsService {
     const meta = question.question_meta;
     return meta;
   }
-  /**
-   *
-   * GET QUESTION TYPE
-   *
-   */
+
   async setQuestionMeta(id: number, key: string, value: any): Promise<any> {
     const question = await this.getQuestion(id);
 
@@ -111,7 +144,12 @@ export class QuestionsService {
     await this.question_metaRepository.save(question_meta);
     return question_meta;
   }
-
+  /**
+   *
+   * QUESTION
+   * GET QUESTION TYPE
+   *
+   */
   async getQuestionType(id: number): Promise<any> {
     const question = await this.questionRepository.findOne({
       where: { id },
@@ -122,7 +160,13 @@ export class QuestionsService {
   }
   /**
    *
-   * ANSWERS - CRUD && GET ALL/ALL TXT
+   * ANSWERS
+   * GET ALL ANSWERS
+   * GET ALL ANSWERS TEXT
+   * GET ONE ANSWER
+   * SET NEW ANSWER
+   * DELETE ANSWER
+   * UPDATE ANSWER
    *
    */
 
