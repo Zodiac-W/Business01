@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user-dto';
@@ -38,6 +38,8 @@ import { UpdateCommentDto } from 'src/discusion/dto/update-comment-dto';
 import { Comment_replay } from 'src/discusion/entities/comment-replay.entity';
 import { CreateCommentReplayDto } from 'src/discusion/dto/create-comment-replay-dto';
 import { UpdateCommentReplayDto } from 'src/discusion/dto/update-comment-replay-dto';
+import { response } from 'express';
+import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class UsersService {
@@ -169,15 +171,24 @@ export class UsersService {
   }
 
   async getUser(id: number): Promise<any> {
-    try {
-      const user = await this.usersRepository.findOne({ where: { id } });
-      if (!user) {
-        throw Error('User does not exist');
-      }
-      return user;
-    } catch (err) {
-      return { message: err.message };
+    // try {
+    //   const user = await this.usersRepository.findOne({ where: { id } });
+    //   if (!user) {
+    //     // throw Error('User does not exist');
+    //     throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    //   }
+    //   return user;
+    // } catch (err) {
+    //   // return { message: err.message };
+    //   return err;
+    // }
+    const user = await this.usersRepository.findOne({
+      where: { id },
+    });
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
+    return user;
   }
 
   async validateUser(id: number): Promise<any> {
