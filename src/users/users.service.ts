@@ -196,17 +196,24 @@ export class UsersService {
   }
 
   async getUserType(id: number): Promise<any> {
-    const user = await this.getUser(id);
-    if (user.message) {
-      return user;
+    try {
+      const user = await this.getUser(id);
+      if (user.message) {
+        return user;
+      }
+      const user_type = user.user_type;
+      return { user_type };
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-    const user_type = user.user_type;
-    return { user_type };
   }
 
   async getAllUsers(): Promise<any> {
     try {
       const users = await this.usersRepository.find();
+      if (users.length < 1) {
+        throw new Error('There is no users');
+      }
       return users;
     } catch (err) {
       // return { message: err.message };
@@ -266,7 +273,7 @@ export class UsersService {
         where: { user_email: email },
       });
       if (!user) {
-        return { message: 'User not found' };
+        throw new Error('User not found');
       }
       return user;
     } catch (err) {
@@ -281,7 +288,7 @@ export class UsersService {
         where: { user_phone: phone },
       });
       if (!user) {
-        return { message: 'User not found' };
+        throw new Error('User not found');
       }
       return user;
     } catch (err) {
@@ -323,7 +330,7 @@ export class UsersService {
         relations: ['user_meta'],
       });
       if (!user) {
-        return { message: 'User not found' };
+        throw new Error('User not found');
       }
 
       const meta = user.user_meta;
@@ -392,7 +399,7 @@ export class UsersService {
       });
 
       if (!user_role) {
-        return { message: "This user doesn't have a role" };
+        throw new Error("This user doesn't have a role");
       }
 
       const role = user_role.role;
@@ -411,7 +418,7 @@ export class UsersService {
       });
 
       if (!user_role) {
-        return { message: "This user doesn't have a role" };
+        throw new Error("This user doesn't have a role");
       }
 
       await this.user_roleRepository.softDelete(user_role.id);
@@ -455,11 +462,12 @@ export class UsersService {
       });
 
       if (student_courses.length < 1) {
-        return { message: "This Student didn't enroll at any course" };
+        throw new Error("This Student didn't enroll at any course");
       }
       return student_courses;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -474,12 +482,13 @@ export class UsersService {
       });
 
       if (!student_course) {
-        return { message: "This student didn't enroll in this coruse" };
+        throw new Error("This student didn't enroll in this coruse");
       }
 
       return student_course;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -491,7 +500,7 @@ export class UsersService {
     try {
       const exist = await this.getStudentCourse(userId, courseId);
       if (!exist.message) {
-        return { message: 'Student is already enrolled' };
+        throw new Error('Student is already enrolled');
       }
 
       const user = await this.getUser(userId);
@@ -505,19 +514,24 @@ export class UsersService {
       await this.student_courseRepository.save(student_course);
       return student_course;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
   async deleteStudentCourse(userId: number, courseId: number): Promise<any> {
-    const student_course = await this.getStudentCourse(userId, courseId);
+    try {
+      const student_course = await this.getStudentCourse(userId, courseId);
 
-    if (student_course.message) {
+      if (student_course.message) {
+        return student_course;
+      }
+
+      await this.student_courseRepository.softDelete(student_course.id);
       return student_course;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-
-    await this.student_courseRepository.softDelete(student_course.id);
-    return student_course;
   }
 
   async updateStudentCourseStatus(
@@ -525,15 +539,19 @@ export class UsersService {
     courseId: number,
     status: StudentCourseStatus,
   ): Promise<any> {
-    const student_course = await this.getStudentCourse(userId, courseId);
-    if (student_course.message) {
+    try {
+      const student_course = await this.getStudentCourse(userId, courseId);
+      if (student_course.message) {
+        return student_course;
+      }
+
+      student_course.student_course_status = status;
+
+      await this.student_courseRepository.save(student_course);
       return student_course;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-
-    student_course.student_course_status = status;
-
-    await this.student_courseRepository.save(student_course);
-    return student_course;
   }
   /**
    *
@@ -553,12 +571,13 @@ export class UsersService {
       });
 
       if (instructor_courses.length < 1) {
-        return { message: "This instructor doesn't have any courses yet" };
+        throw new Error("This instructor doesn't have any courses yet");
       }
 
       return instructor_courses;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -573,12 +592,13 @@ export class UsersService {
       });
 
       if (!instructor_course) {
-        return { message: "This Instructor didn't create this course" };
+        throw new Error("This Instructor didn't create this course");
       }
 
       return instructor_course;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -605,7 +625,8 @@ export class UsersService {
       await this.instructor_courseRepository.save(instructor_course);
       return instructor_course;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -623,7 +644,8 @@ export class UsersService {
       await this.instructor_courseRepository.softDelete(instructor_course.id);
       return instructor_course;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -647,7 +669,8 @@ export class UsersService {
       await this.instructor_courseRepository.save(instructor_course);
       return instructor_course;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
   /**
@@ -668,11 +691,12 @@ export class UsersService {
       });
 
       if (!student_lesson) {
-        return { message: "This student didn't take any lessons yet" };
+        throw new Error("This student didn't take any lessons yet");
       }
       return student_lesson;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -687,12 +711,13 @@ export class UsersService {
       });
 
       if (!student_lesson) {
-        return { message: "This student didn't take this lesson" };
+        throw new Error("This student didn't take this lesson");
       }
 
       return student_lesson;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -704,7 +729,7 @@ export class UsersService {
     try {
       const exist = await this.getStudentLesson(userId, lessonId);
       if (!exist.message) {
-        return { message: 'Student is already enrolled' };
+        throw new Error('Student is already enrolled');
       }
 
       const user = await this.getUser(userId);
@@ -718,7 +743,8 @@ export class UsersService {
       await this.student_lessonRepository.save(student_lesson);
       return student_lesson;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -733,7 +759,8 @@ export class UsersService {
       await this.student_lessonRepository.softDelete(student_lesson.id);
       return student_lesson;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -754,7 +781,8 @@ export class UsersService {
       await this.student_lessonRepository.save(student_lesson);
       return student_lesson;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
   /**
@@ -775,12 +803,13 @@ export class UsersService {
       });
 
       if (instructor_lesson.length < 1) {
-        return { message: "This instructor didn't create any lessons yet" };
+        throw new Error("This instructor didn't create any lessons yet");
       }
 
       return instructor_lesson;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -795,12 +824,13 @@ export class UsersService {
       });
 
       if (!instructor_lesson) {
-        return { message: "This instructor didn't give this lesson" };
+        throw new Error("This instructor didn't give this lesson");
       }
 
       return instructor_lesson;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -825,7 +855,8 @@ export class UsersService {
       await this.instructor_lessonRepository.save(instructor_lesson);
       return instructor_lesson;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -843,7 +874,8 @@ export class UsersService {
       await this.instructor_lessonRepository.softDelete(instructor_lesson.id);
       return instructor_lesson;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -866,7 +898,8 @@ export class UsersService {
       await this.instructor_lessonRepository.save(instructor_lesson);
       return instructor_lesson;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
   /**
@@ -887,11 +920,12 @@ export class UsersService {
 
     try {
       if (student_quiz.length < 1) {
-        return { message: "This student didn't take any quiz" };
+        throw new Error("This student didn't take any quiz");
       }
       return student_quiz;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -908,11 +942,12 @@ export class UsersService {
       });
 
       if (!student_quiz) {
-        return { message: "The student didn't take this quiz" };
+        throw new Error("The student didn't take this quiz");
       }
       return student_quiz;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -923,11 +958,12 @@ export class UsersService {
       });
 
       if (!student_quiz) {
-        return { message: "The student didn't take this quiz" };
+        throw new Error("The student didn't take this quiz");
       }
       return student_quiz;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -955,7 +991,8 @@ export class UsersService {
       await this.student_quizRepository.save(student_quiz);
       return student_quiz;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -970,7 +1007,8 @@ export class UsersService {
       await this.student_quizRepository.softDelete(student_quiz.id);
       return student_quiz;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -991,7 +1029,8 @@ export class UsersService {
       await this.student_quizRepository.save(student_quiz);
       return student_quiz;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
   /**
@@ -1012,11 +1051,12 @@ export class UsersService {
         });
 
       if (student_quiz_questions.length < 1) {
-        return { message: "This student didn't answer any question yet" };
+        throw new Error("This student didn't answer any question yet");
       }
       return student_quiz_questions;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -1036,13 +1076,12 @@ export class UsersService {
         });
 
       if (!student_quiz_question) {
-        return {
-          message: "The student didn't answer this question in this quiz",
-        };
+        throw new Error("The student didn't answer this question in this quiz");
       }
       return student_quiz_question;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -1063,9 +1102,9 @@ export class UsersService {
         question_id,
       );
       if (!exist.message) {
-        return {
-          message: 'The answer to this question has already been submitted',
-        };
+        throw new Error(
+          'The answer to this question has already been submitted',
+        );
       }
 
       try {
@@ -1098,10 +1137,12 @@ export class UsersService {
         await this.student_quiz_questionRepository.save(student_quiz_question);
         return student_quiz_question;
       } catch (err) {
-        return { message: err.message };
+        // return { message: err.message };
+        throw new HttpException(err.message, HttpStatus.NOT_FOUND);
       }
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -1124,7 +1165,8 @@ export class UsersService {
       );
       return student_quiz_question;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -1156,7 +1198,8 @@ export class UsersService {
       await this.student_quiz_questionRepository.save(student_quiz_question);
       return student_quiz_question;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
   /**
@@ -1169,59 +1212,71 @@ export class UsersService {
    *
    */
   async answerAutoReview(question: Question, answer: Answer): Promise<any> {
-    console.log('ANSWER AUTO REVIEW');
-    if (question.question_type !== 'short answer') {
-      const checkAnswer = await this.questionsServce.checkQuestionAnswer(
-        question.id,
-        answer.id,
-      );
-      const is_correct = checkAnswer[0].answer_is_correct;
+    try {
+      console.log('ANSWER AUTO REVIEW');
+      if (question.question_type !== 'short answer') {
+        const checkAnswer = await this.questionsServce.checkQuestionAnswer(
+          question.id,
+          answer.id,
+        );
+        const is_correct = checkAnswer[0].answer_is_correct;
 
-      if (is_correct === null) {
-        console.log(is_correct);
-        return null;
-      } else if (is_correct) {
-        console.log(is_correct);
-        return true;
-      } else {
-        console.log(is_correct);
-        return false;
+        if (is_correct === null) {
+          console.log(is_correct);
+          return null;
+        } else if (is_correct) {
+          console.log(is_correct);
+          return true;
+        } else {
+          console.log(is_correct);
+          return false;
+        }
       }
+      return null;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-    return null;
   }
 
   async checkIsCorrect(student_quiz_id: number): Promise<any> {
-    const student_quiz_question =
-      await this.student_quiz_questionRepository.find({
-        where: { student_quiz: { id: student_quiz_id } },
-        relations: ['question'],
+    try {
+      const student_quiz_question =
+        await this.student_quiz_questionRepository.find({
+          where: { student_quiz: { id: student_quiz_id } },
+          relations: ['question'],
+        });
+      const is_correct = student_quiz_question.map((item) => {
+        return {
+          question_title: item.question.question_txt,
+          is_correct: item.student_quiz_question_is_correct,
+        };
       });
-    const is_correct = student_quiz_question.map((item) => {
-      return {
-        question_title: item.question.question_txt,
-        is_correct: item.student_quiz_question_is_correct,
-      };
-    });
-    return is_correct;
+      return is_correct;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async checkIsReviewed(student_quiz_id: number): Promise<any> {
-    const is_correct = await this.checkIsCorrect(student_quiz_id);
+    try {
+      const is_correct = await this.checkIsCorrect(student_quiz_id);
 
-    const not_reviewed = is_correct.find((item) => {
-      if (item.is_correct === null) {
-        return true;
+      const not_reviewed = is_correct.find((item) => {
+        if (item.is_correct === null) {
+          return true;
+        }
+      });
+
+      let reviewed: boolean;
+      if (not_reviewed) {
+        reviewed = false;
+        return { reviewed };
+      } else {
+        reviewed = true;
+        return { reviewed };
       }
-    });
-
-    let reviewed: boolean;
-    if (not_reviewed) {
-      reviewed = false;
-      return { reviewed };
-    } else {
-      reviewed = true;
-      return { reviewed };
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -1241,7 +1296,8 @@ export class UsersService {
 
       return { answer_txt };
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -1250,17 +1306,21 @@ export class UsersService {
     question_id: number,
     is_correct: boolean,
   ): Promise<any> {
-    const student_quiz_question =
-      await this.student_quiz_questionRepository.findOne({
-        where: {
-          student_quiz: { id: student_quiz_id },
-          question: { id: question_id },
-        },
-      });
-    student_quiz_question.student_quiz_question_is_correct = is_correct;
+    try {
+      const student_quiz_question =
+        await this.student_quiz_questionRepository.findOne({
+          where: {
+            student_quiz: { id: student_quiz_id },
+            question: { id: question_id },
+          },
+        });
+      student_quiz_question.student_quiz_question_is_correct = is_correct;
 
-    await this.student_quiz_questionRepository.save(student_quiz_question);
-    return student_quiz_question;
+      await this.student_quiz_questionRepository.save(student_quiz_question);
+      return student_quiz_question;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
   /**
    *
@@ -1280,12 +1340,13 @@ export class UsersService {
       });
 
       if (comments.length < 1) {
-        return { message: "This discussion doesn't have any comments" };
+        throw new Error("This discussion doesn't have any comments");
       }
 
       return comments;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -1297,55 +1358,68 @@ export class UsersService {
       });
 
       if (!comment) {
-        return { message: "This comment doesn't exist" };
+        throw new Error("This comment doesn't exist");
       }
 
       return comment;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
   async setComment(createCommentDto: CreateCommentDto): Promise<any> {
-    const { comment_txt, user_id, discusion_id } = createCommentDto;
+    try {
+      const { comment_txt, user_id, discusion_id } = createCommentDto;
 
-    const user = await this.getUser(user_id);
-    const discssion = await this.discusionService.getDiscusion(discusion_id);
+      const user = await this.getUser(user_id);
+      const discssion = await this.discusionService.getDiscusion(discusion_id);
 
-    const comment = new Comment();
+      const comment = new Comment();
 
-    comment.comment_txt = comment_txt;
-    comment.user = user;
-    comment.discusion = discssion;
+      comment.comment_txt = comment_txt;
+      comment.user = user;
+      comment.discusion = discssion;
 
-    await this.commentRepository.save(comment);
-    return comment;
+      await this.commentRepository.save(comment);
+      return comment;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async deleteComment(comment_id: number): Promise<any> {
-    const comment = await this.getComment(comment_id);
+    try {
+      const comment = await this.getComment(comment_id);
 
-    if (comment.message) {
+      if (comment.message) {
+        return comment;
+      }
+
+      await this.commentRepository.softDelete(comment_id);
       return comment;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-
-    await this.commentRepository.softDelete(comment_id);
-    return comment;
   }
 
   async updateComment(
     comment_id: number,
     updateCommentDto: UpdateCommentDto,
   ): Promise<any> {
-    let comment = await this.getComment(comment_id);
+    try {
+      let comment = await this.getComment(comment_id);
 
-    if (comment.message) {
+      if (comment.message) {
+        return comment;
+      }
+
+      comment = { ...comment, ...updateCommentDto };
+      await this.commentRepository.save(comment);
       return comment;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-
-    comment = { ...comment, ...updateCommentDto };
-    await this.commentRepository.save(comment);
-    return comment;
   }
   /**
    *
@@ -1364,12 +1438,13 @@ export class UsersService {
       });
 
       if (comment_replays.length < 1) {
-        return { message: "This comment doesn't have any replays yet" };
+        throw new Error("This comment doesn't have any replays yet");
       }
 
       return comment_replays;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -1381,54 +1456,68 @@ export class UsersService {
       });
 
       if (!replay) {
-        return { message: "This replay doesn't exist" };
+        throw new Error("This replay doesn't exist");
       }
       return replay;
     } catch (err) {
-      return { message: err.message };
+      // return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
   async setCommentReplay(
     createCommentReplayDto: CreateCommentReplayDto,
   ): Promise<any> {
-    const { comment_replay_txt, user_id, comment_id } = createCommentReplayDto;
+    try {
+      const { comment_replay_txt, user_id, comment_id } =
+        createCommentReplayDto;
 
-    const user = await this.getUser(user_id);
-    const comment = await this.getComment(comment_id);
+      const user = await this.getUser(user_id);
+      const comment = await this.getComment(comment_id);
 
-    const comment_replay = new Comment_replay();
-    comment_replay.comment_replay_txt = comment_replay_txt;
-    comment_replay.user = user;
-    comment_replay.comment = comment;
+      const comment_replay = new Comment_replay();
+      comment_replay.comment_replay_txt = comment_replay_txt;
+      comment_replay.user = user;
+      comment_replay.comment = comment;
 
-    await this.comment_replayRepository.save(comment_replay);
-    return comment_replay;
+      await this.comment_replayRepository.save(comment_replay);
+      return comment_replay;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
   async deleteCommentReplay(replay_id: number): Promise<any> {
-    const comment_replay = await this.getCommentReplay(replay_id);
+    try {
+      const comment_replay = await this.getCommentReplay(replay_id);
 
-    if (comment_replay.message) {
+      if (comment_replay.message) {
+        return comment_replay;
+      }
+
+      await this.comment_replayRepository.softDelete(comment_replay.id);
       return comment_replay;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-
-    await this.comment_replayRepository.softDelete(comment_replay.id);
-    return comment_replay;
   }
 
   async updateCommentReplay(
     replay_id: number,
     updateCommentReplayDto: UpdateCommentReplayDto,
   ): Promise<any> {
-    let replay = await this.getCommentReplay(replay_id);
+    try {
+      let replay = await this.getCommentReplay(replay_id);
 
-    if (replay.message) {
+      if (replay.message) {
+        return replay;
+      }
+
+      replay = { ...replay, ...updateCommentReplayDto };
+      await this.comment_replayRepository.save(replay);
       return replay;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
-
-    replay = { ...replay, ...updateCommentReplayDto };
-    await this.comment_replayRepository.save(replay);
-    return replay;
   }
 }
