@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { TypeOrmOptionsFactory } from '@nestjs/typeorm';
 import { Course_discusion } from 'src/courses/entities/course-discusion.entity';
 import { Course_lesson } from 'src/courses/entities/course-lesson.entity';
+import { Course_metadata_group } from 'src/courses/entities/course-meta-group.entity';
 import { Course_meta } from 'src/courses/entities/course-meta.entity';
 import { Course_quiz } from 'src/courses/entities/course-quiz.entity';
 import { Course } from 'src/courses/entities/course.entity';
@@ -68,6 +69,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         Comment,
         Course_discusion,
         Comment_replay,
+        Course_metadata_group,
       ],
       migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
       cli: {

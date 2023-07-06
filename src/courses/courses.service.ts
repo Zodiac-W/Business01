@@ -13,6 +13,8 @@ import { Course_quiz } from './entities/course-quiz.entity';
 import { QuizzesService } from 'src/quizzes/quizzes.service';
 import { Course_discusion } from './entities/course-discusion.entity';
 import { DiscusionService } from 'src/discusion/discusion.service';
+import { Course_metadata_group } from './entities/course-meta-group.entity';
+import { CreateCourseWithMetaDto } from './dto/create-course-with-meta-dto';
 
 @Injectable()
 export class CoursesService {
@@ -37,6 +39,9 @@ export class CoursesService {
     @InjectRepository(Course_discusion)
     private course_discusionRepository: Repository<Course_discusion>,
     private discusionService: DiscusionService,
+
+    @InjectRepository(Course_metadata_group)
+    private course_metadata_groupRepository: Repository<Course_metadata_group>,
   ) {}
   /**
    *
@@ -140,6 +145,53 @@ export class CoursesService {
   /**
    *
    * COURSE
+   * CREATE COURSE WITH METADATA
+   *
+   */
+  async setCourseWithMeta(
+    createCourseWithMetaDto: CreateCourseWithMetaDto,
+  ): Promise<any> {
+    try {
+      const {
+        course_title,
+        course_description,
+        course_duration,
+        course_status,
+        metadata_group_name,
+        metadata,
+      } = createCourseWithMetaDto;
+      const createCourse = {
+        course_title,
+        course_description,
+        course_duration,
+        course_status,
+      };
+      const course = await this.createCourse(createCourse);
+      let group = await this.getCourseMetadataGroupByName(metadata_group_name);
+
+      if (group.message) {
+        group = await this.setCourseMetadataGroup(metadata_group_name);
+      }
+
+      metadata.forEach(async (item) => {
+        const meta = new Course_meta();
+
+        meta.course = course;
+        meta.course_metadata_group = group;
+        meta.meta_key = item.key;
+        meta.meta_value = item.value;
+
+        await this.course_metaRepository.save(meta);
+      });
+
+      return course;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
+  }
+  /**
+   *
+   * COURSE
    * SET COURSE ROUNDS
    * GET COURSE ROUNDS
    *
@@ -193,6 +245,7 @@ export class CoursesService {
    * COURSE
    * GET COURSE META
    * SET COURSE META
+   * GET COURSE META BY KEY
    *
    */
   async getCourseMeta(id: number): Promise<any> {
@@ -209,14 +262,25 @@ export class CoursesService {
     }
   }
 
-  async setCourseMeta(id: number, key: string, value: any): Promise<any> {
+  async setCourseMeta(
+    course_id: number,
+    group_name: string,
+    key: string,
+    value: any,
+  ): Promise<any> {
     try {
-      const course = await this.getCourse(id);
+      const course = await this.getCourse(course_id);
+      let group = await this.getCourseMetadataGroupByName(group_name);
+
+      if (group.message) {
+        group = await this.setCourseMetadataGroup(group_name);
+      }
 
       const course_meta = new Course_meta();
       course_meta.meta_key = key;
       course_meta.meta_value = value;
       course_meta.course = course;
+      course_meta.course_metadata_group = group;
 
       await this.course_metaRepository.save(course_meta);
       return course_meta;
@@ -229,6 +293,7 @@ export class CoursesService {
     try {
       const course_meta = await this.course_metaRepository.findOne({
         where: { course: { id: course_id }, meta_key: key },
+        relations: ['course_metadata_group'],
         order: { id: 'DESC' },
       });
       if (!course_meta) {
@@ -236,6 +301,96 @@ export class CoursesService {
       }
 
       return course_meta;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
+  }
+  /**
+   *
+   * COURSE METADATA GROUP
+   * GET ALL GROUPS
+   * GET ONE GROUP
+   * GET GROUP BY NAME
+   * SET NEW GROUP
+   * DELETE GROUP
+   * UPDATE GROUP
+   *
+   */
+  async getCourseMetadataGroups(): Promise<any> {
+    try {
+      const groups = await this.course_metadata_groupRepository.find();
+
+      if (groups.length < 1) {
+        throw new Error('There is no groups yet');
+      }
+      return groups;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async getCourseMetadataGroup(group_id: number): Promise<any> {
+    try {
+      const group = await this.course_metadata_groupRepository.findOne({
+        where: { id: group_id },
+      });
+      if (!group) {
+        throw new Error('Not found');
+      }
+      return group;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async getCourseMetadataGroupByName(group_name: string): Promise<any> {
+    try {
+      const group = await this.course_metadata_groupRepository.findOne({
+        where: { course_metadata_group_name: group_name },
+      });
+      if (!group) {
+        return { message: "Doesn't exist" };
+      }
+      return group;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async setCourseMetadataGroup(name: string): Promise<any> {
+    try {
+      const group = new Course_metadata_group();
+      group.course_metadata_group_name = name;
+
+      await this.course_metadata_groupRepository.save(group);
+      return group;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async deleteCourseMetadataGroup(group_id: number): Promise<any> {
+    try {
+      const group = await this.getCourseMetadataGroup(group_id);
+
+      await this.course_metadata_groupRepository.softDelete(group_id);
+      return group;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async updateCourseMetadataGroup(
+    group_id: number,
+    new_name: string,
+  ): Promise<any> {
+    try {
+      const group = await this.getCourseMetadataGroup(group_id);
+
+      group.course_metadata_group_name = new_name;
+
+      await this.course_metadata_groupRepository.save(group);
+      return group;
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }

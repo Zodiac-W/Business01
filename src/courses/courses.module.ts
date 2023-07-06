@@ -11,6 +11,7 @@ import { Course_quiz } from './entities/course-quiz.entity';
 import { QuizzesModule } from 'src/quizzes/quizzes.module';
 import { Course_discusion } from './entities/course-discusion.entity';
 import { DiscusionModule } from 'src/discusion/discusion.module';
+import { Course_metadata_group } from './entities/course-meta-group.entity';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { DiscusionModule } from 'src/discusion/discusion.module';
       Instructor_course,
       Course_quiz,
       Course_discusion,
+      Course_metadata_group,
     ]),
     LessonsModule,
     QuizzesModule,

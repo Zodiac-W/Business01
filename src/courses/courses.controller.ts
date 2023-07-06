@@ -22,6 +22,7 @@ import { CreateLessonDto } from 'src/lessons/dto/create-lesson-dto';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course-dto';
 import { UpdateCourseDto } from './dto/update-course-dto';
+import { CreateCourseWithMetaDto } from './dto/create-course-with-meta-dto';
 
 @ApiTags('Courses')
 @Controller('courses')
@@ -151,6 +152,32 @@ export class CoursesController {
   }
   /**
    *
+   * COURSE
+   * CREATE COURSE WITH METADATA
+   *
+   */
+  @ApiOperation({ summary: 'Create a new course with its metadata' })
+  @ApiBearerAuth()
+  @ApiBody({
+    schema: {
+      type: 'CreateCourseWithMetaDto',
+    },
+    description: 'The new course data and metadata',
+    required: true,
+    type: CreateCourseWithMetaDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The new course data',
+    type: CreateCourseDto,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('/complete/new')
+  setCourseWithMeta(@Body() createCourseWithMetaDto: CreateCourseWithMetaDto) {
+    return this.coursesService.setCourseWithMeta(createCourseWithMetaDto);
+  }
+  /**
+   *
    *  COURSE
    *  GET COURSE ROUNDS
    *  SET COURSE ROUNDS
@@ -271,9 +298,10 @@ export class CoursesController {
   setCourseMeta(
     @Body('key') key: string,
     @Body('value') value: any,
+    @Body('group_name') group_name: string,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    return this.coursesService.setCourseMeta(id, key, value);
+    return this.coursesService.setCourseMeta(id, group_name, key, value);
   }
 
   @ApiOperation({ summary: 'Get course meta by key' })
