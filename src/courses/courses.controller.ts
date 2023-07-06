@@ -243,6 +243,7 @@ export class CoursesController {
    *  COURSE
    *  GET COURSE META
    *  SET COURSE META
+   *  GET COURSE META BY KEY
    *
    */
   @ApiOperation({ summary: 'Get all course meta data' })

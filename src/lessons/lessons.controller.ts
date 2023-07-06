@@ -26,7 +26,17 @@ import { LessonsService } from './lessons.service';
 @Controller('lessons')
 export class LessonsController {
   constructor(private lessonsService: LessonsService) {}
-
+  /**
+   *
+   * LESSON
+   * GET ALL LESSONS
+   * GET ALL LESSONS' TITLES
+   * GET ONE LESSON
+   * SET LESSON
+   * DELETE LESSON
+   * UPDATE LESSON
+   *
+   */
   @ApiOperation({ summary: 'Get all lessons' })
   @ApiBearerAuth()
   @ApiResponse({
@@ -137,7 +147,13 @@ export class LessonsController {
   ) {
     return this.lessonsService.updateLesson(id, updateLessonDto);
   }
-
+  /**
+   *
+   * LESSON - CLASS
+   * GET LESSONS CLASS
+   * SET LESSON'S CLASS
+   *
+   */
   @ApiOperation({ summary: 'Get the lesson classes' })
   @ApiBearerAuth()
   @ApiParam({
@@ -190,7 +206,14 @@ export class LessonsController {
   ) {
     return this.lessonsService.setLessonClass(id, className);
   }
-
+  /**
+   *
+   * LESSON - META
+   * GET LESSONS META
+   * SET LESSON META
+   * GET LESSON META BY KEY
+   *
+   */
   @ApiOperation({ summary: 'Get all lesson meta data' })
   @ApiBearerAuth()
   @ApiParam({
@@ -239,13 +262,55 @@ export class LessonsController {
   @UseGuards(JwtAuthGuard)
   @Post('/meta/new/:id')
   setLessonMeta(
+    @Body('group_name') group_name: string,
     @Body('key') key: string,
     @Body('value') value: any,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    return this.lessonsService.setLessonMeta(id, key, value);
+    return this.lessonsService.setLessonMeta(id, group_name, key, value);
   }
 
+  @ApiOperation({ summary: 'Get lesson meta by key' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected lesson id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        key: {
+          type: 'string',
+          example: 'location',
+          description: 'The key of the metadata',
+        },
+      },
+    },
+    description: 'The key for the metadata',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The selected metadata',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('/meta/key/:id')
+  getLessonMetaByKey(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('key') key: string,
+  ) {
+    return this.lessonsService.getLessonMetaByKey(id, key);
+  }
+  /**
+   *
+   * LESSON - INSTRUCTOR
+   * GET LESSON'S INSTRUCTOR
+   *
+   */
   @ApiOperation({ summary: 'The lesson instructor' })
   @ApiBearerAuth()
   @ApiParam({

@@ -7,6 +7,7 @@ import { Course } from 'src/courses/entities/course.entity';
 import { Comment_replay } from 'src/discusion/entities/comment-replay.entity';
 import { Comment } from 'src/discusion/entities/comment.entity';
 import { Discusion } from 'src/discusion/entities/discusion.entity';
+import { Lesson_metadata_group } from 'src/lessons/entities/lesson-meta-group.entity';
 import { Lesson_meta } from 'src/lessons/entities/lesson-meta.entity';
 import { Lesson } from 'src/lessons/entities/lesson.entity';
 import { Answer } from 'src/questions/entities/answer.entity';
@@ -63,6 +64,7 @@ export const AppDataSource = new DataSource({
     Course_discusion,
     Comment_replay,
     Course_metadata_group,
+    Lesson_metadata_group,
   ],
   migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
   cli: {

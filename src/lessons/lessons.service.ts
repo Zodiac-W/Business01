@@ -6,6 +6,7 @@ import { CreateLessonDto } from './dto/create-lesson-dto';
 import { UpdateLessonDto } from './dto/update-lesson-dto';
 import { Lesson_meta } from './entities/lesson-meta.entity';
 import { Lesson } from './entities/lesson.entity';
+import { Lesson_metadata_group } from './entities/lesson-meta-group.entity';
 
 @Injectable()
 export class LessonsService {
@@ -18,6 +19,9 @@ export class LessonsService {
 
     @InjectRepository(Instructor_lesson)
     private instructor_lessonRepository: Repository<Instructor_lesson>,
+
+    @InjectRepository(Lesson_metadata_group)
+    private lesson_metadata_groupRepository: Repository<Lesson_metadata_group>,
   ) {}
   /**
    *
@@ -165,6 +169,7 @@ export class LessonsService {
    * LESSON - META
    * GET LESSON META
    * SET LESSON META
+   * GET LESSON META BY KEY
    *
    */
   async getLessonMeta(id: number): Promise<any> {
@@ -180,17 +185,135 @@ export class LessonsService {
     }
   }
 
-  async setLessonMeta(id: number, key: string, value: any): Promise<any> {
+  async setLessonMeta(
+    lesson_id: number,
+    group_name: string,
+    key: string,
+    value: any,
+  ): Promise<any> {
     try {
-      const lesson = await this.getLesson(id);
+      const lesson = await this.getLesson(lesson_id);
+
+      let group = await this.getLessonMetadataGroupByName(group_name);
+
+      if (group.message) {
+        group = await this.setLessonMetadataGroup(group_name);
+      }
 
       const lesson_meta = new Lesson_meta();
       lesson_meta.meta_key = key;
       lesson_meta.meta_value = value;
       lesson_meta.lesson = lesson;
+      lesson_meta.lesson_metadata_group = group;
 
       await this.lesson_metaRepository.save(lesson_meta);
       return lesson_meta;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async getLessonMetaByKey(lesson_id: number, key: string): Promise<any> {
+    try {
+      const lesson_meta = await this.lesson_metaRepository.findOne({
+        where: { lesson: { id: lesson_id }, meta_key: key },
+        relations: ['lesson_metadata_group'],
+        order: { id: 'DESC' },
+      });
+      if (!lesson_meta) {
+        throw new Error('Not found');
+      }
+
+      return lesson_meta;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
+  }
+  /**
+   *
+   * LESSON METADATA GROUP
+   * GET ALL GROUPS
+   * GET ONE GROUP
+   * GET GROUP BY NAME
+   * SET NEW GROUP
+   * DELETE GROUP
+   * UPDATE GROUP
+   *
+   */
+  async getLessonMetadataGroups(): Promise<any> {
+    try {
+      const groups = await this.lesson_metadata_groupRepository.find();
+
+      if (groups.length < 1) {
+        throw new Error('There is no groups yet');
+      }
+      return groups;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async getLessonMetadataGroup(group_id: number): Promise<any> {
+    try {
+      const group = await this.lesson_metadata_groupRepository.findOne({
+        where: { id: group_id },
+      });
+      if (!group) {
+        throw new Error('Not found');
+      }
+      return group;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async getLessonMetadataGroupByName(group_name: string): Promise<any> {
+    try {
+      const group = await this.lesson_metadata_groupRepository.findOne({
+        where: { lesson_metadata_group_name: group_name },
+      });
+      if (!group) {
+        return { message: "Doesn't eixst" };
+      }
+      return group;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async setLessonMetadataGroup(name: string): Promise<any> {
+    try {
+      const group = new Lesson_metadata_group();
+      group.lesson_metadata_group_name = name;
+
+      await this.lesson_metadata_groupRepository.save(group);
+      return group;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async deleteLessonMetadataGroup(group_id: number): Promise<any> {
+    try {
+      const group = await this.getLessonMetadataGroup(group_id);
+
+      await this.lesson_metadata_groupRepository.softDelete(group_id);
+      return group;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async updateLessonMetadataGroup(
+    group_id: number,
+    new_name: string,
+  ): Promise<any> {
+    try {
+      const group = await this.getLessonMetadataGroup(group_id);
+      group.lesson_metadata_group_name = new_name;
+
+      await this.lesson_metadata_groupRepository.save(group);
+      return group;
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
