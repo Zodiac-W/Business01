@@ -275,6 +275,42 @@ export class CoursesController {
   ) {
     return this.coursesService.setCourseMeta(id, key, value);
   }
+
+  @ApiOperation({ summary: 'Get course meta by key' })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected course id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        key: {
+          type: 'string',
+          example: 'place',
+          description: 'The meta data key',
+        },
+      },
+    },
+    description: 'The meta key',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The selected meta data',
+    type: Object,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('meta/key/:id')
+  getCourseMetaByKey(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('key') key: string,
+  ) {
+    return this.coursesService.getCourseMetaByKey(id, key);
+  }
   /**
    *
    * COURSE - LESSON

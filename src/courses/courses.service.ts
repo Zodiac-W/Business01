@@ -224,6 +224,22 @@ export class CoursesService {
       throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
+
+  async getCourseMetaByKey(course_id: number, key: string): Promise<any> {
+    try {
+      const course_meta = await this.course_metaRepository.findOne({
+        where: { course: { id: course_id }, meta_key: key },
+        order: { id: 'DESC' },
+      });
+      if (!course_meta) {
+        throw new Error('Not found');
+      }
+
+      return course_meta;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
+  }
   /**
    *
    * COURSE - LESSON
