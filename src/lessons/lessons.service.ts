@@ -220,7 +220,6 @@ export class LessonsService {
     metadata: [key: any, value: any],
   ): Promise<any> {
     try {
-      console.log(group_name);
       const lesson = await this.getLesson(lesson_id);
       let group = await this.getLessonMetadataGroupByName(group_name);
       if (group.message) {
@@ -300,7 +299,6 @@ export class LessonsService {
   async getLessonMetadataGroupByName(group_name: string): Promise<any> {
     try {
       if (group_name === null) {
-        // return { message: 'Please enter the group name' };
         throw new Error('Please enter the group name');
       }
 

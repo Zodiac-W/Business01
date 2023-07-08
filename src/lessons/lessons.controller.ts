@@ -296,6 +296,7 @@ export class LessonsController {
               value: 'Egypt',
             },
           ],
+          description: 'The list of metadata',
         },
       },
     },

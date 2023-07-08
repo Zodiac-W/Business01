@@ -243,6 +243,7 @@ export class CoursesController {
    *  COURSE
    *  GET COURSE META
    *  SET COURSE META
+   *  SET COURSE META LIST
    *  GET COURSE META BY KEY
    *
    */
@@ -303,6 +304,53 @@ export class CoursesController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     return this.coursesService.setCourseMeta(id, group_name, key, value);
+  }
+
+  @ApiOperation({ summary: "Set a list of course's metadata" })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected lesson id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        group_name: {
+          type: 'string',
+          example: 'location',
+          description: 'The metadata group name',
+        },
+        metadata: {
+          type: 'array',
+          example: [
+            {
+              key: 'place',
+              value: 'Egypt',
+            },
+          ],
+          description: 'The list of metadata',
+        },
+      },
+    },
+    description: 'The meta group name, and the metadata itself',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of added metadata',
+    type: [Object],
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('/meta/new/list/:id')
+  setCourseMetaList(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('group_name') group_name: string,
+    @Body('metadata') metadata: [key: any, value: any],
+  ) {
+    return this.coursesService.setCourseMetaList(id, group_name, metadata);
   }
 
   @ApiOperation({ summary: 'Get course meta by key' })

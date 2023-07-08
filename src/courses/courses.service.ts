@@ -245,6 +245,7 @@ export class CoursesService {
    * COURSE
    * GET COURSE META
    * SET COURSE META
+   * SET COURSE META LIST
    * GET COURSE META BY KEY
    *
    */
@@ -257,6 +258,34 @@ export class CoursesService {
 
       const meta = course.course_meta;
       return meta;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async setCourseMetaList(
+    course_id: number,
+    group_name: string,
+    metadata: [key: any, value: any],
+  ): Promise<any> {
+    try {
+      const course = await this.getCourse(course_id);
+      let group = await this.getCourseMetadataGroupByName(group_name);
+      if (group.message) {
+        group = await this.setCourseMetadataGroup(group_name);
+      }
+
+      metadata.forEach(async (item) => {
+        const meta = new Course_meta();
+
+        meta.course = course;
+        meta.course_metadata_group = group;
+        meta.meta_key = item.key;
+        meta.meta_value = item.value;
+
+        await this.course_metaRepository.save(meta);
+      });
+      return metadata;
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
@@ -345,6 +374,9 @@ export class CoursesService {
 
   async getCourseMetadataGroupByName(group_name: string): Promise<any> {
     try {
+      if (group_name === null) {
+        throw new Error('Please enter the group name');
+      }
       const group = await this.course_metadata_groupRepository.findOne({
         where: { course_metadata_group_name: group_name },
       });
