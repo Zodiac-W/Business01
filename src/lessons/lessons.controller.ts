@@ -211,6 +211,7 @@ export class LessonsController {
    * LESSON - META
    * GET LESSONS META
    * SET LESSON META
+   * SET LESSON META LIST
    * GET LESSON META BY KEY
    *
    */
@@ -272,6 +273,40 @@ export class LessonsController {
 
   @ApiOperation({ summary: "Set a list of lesson's metadata" })
   @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    example: 2,
+    description: 'The selected lesson id',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        group_name: {
+          type: 'string',
+          example: 'Location',
+          description: 'The group title',
+        },
+        metadata: {
+          type: 'array',
+          example: [
+            {
+              key: 'place',
+              value: 'Egypt',
+            },
+          ],
+        },
+      },
+    },
+    description: 'The meta group name, and the metadata itself',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of added metadata',
+    type: [Object],
+  })
   @UseGuards(JwtAuthGuard)
   @Post('/meta/new/list/:id')
   setLessonMetaList(

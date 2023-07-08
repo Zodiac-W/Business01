@@ -169,6 +169,7 @@ export class LessonsService {
    * LESSON - META
    * GET LESSON META
    * SET LESSON META
+   * SET LESSON META LIST
    * GET LESSON META BY KEY
    *
    */
