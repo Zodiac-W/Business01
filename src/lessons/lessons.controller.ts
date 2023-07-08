@@ -270,6 +270,18 @@ export class LessonsController {
     return this.lessonsService.setLessonMeta(id, group_name, key, value);
   }
 
+  @ApiOperation({ summary: "Set a list of lesson's metadata" })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post('/meta/new/list/:id')
+  setLessonMetaList(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('group_name') group_name: string,
+    @Body('metadata') metadata: [key: any, value: any],
+  ) {
+    return this.lessonsService.setLessonMetaList(id, group_name, metadata);
+  }
+
   @ApiOperation({ summary: 'Get lesson meta by key' })
   @ApiBearerAuth()
   @ApiParam({

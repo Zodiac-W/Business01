@@ -213,6 +213,34 @@ export class LessonsService {
     }
   }
 
+  async setLessonMetaList(
+    lesson_id: number,
+    group_name: string,
+    metadata: [key: any, value: any],
+  ): Promise<any> {
+    try {
+      const lesson = await this.getLesson(lesson_id);
+      let group = await this.getLessonMetadataGroupByName(group_name);
+      if (group.message) {
+        group = await this.setLessonMetadataGroup(group_name);
+      }
+
+      metadata.forEach(async (item) => {
+        const meta = new Lesson_meta();
+
+        meta.lesson = lesson;
+        meta.lesson_metadata_group = group;
+        meta.meta_key = item.key;
+        meta.meta_value = item.value;
+
+        await this.lesson_metaRepository.save(meta);
+      });
+      return metadata;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
   async getLessonMetaByKey(lesson_id: number, key: string): Promise<any> {
     try {
       const lesson_meta = await this.lesson_metaRepository.findOne({
