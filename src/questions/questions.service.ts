@@ -45,7 +45,7 @@ export class QuestionsService {
       await this.questionRepository.save(question);
       return question;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -59,7 +59,7 @@ export class QuestionsService {
 
       return questions;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -73,7 +73,7 @@ export class QuestionsService {
       });
       return questionsTxt;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -88,7 +88,7 @@ export class QuestionsService {
       }
       return question;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -99,7 +99,7 @@ export class QuestionsService {
       await this.questionRepository.softDelete(id);
       return question;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -114,7 +114,7 @@ export class QuestionsService {
       await this.questionRepository.save(question);
       return question;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
   /**
@@ -133,7 +133,7 @@ export class QuestionsService {
       const meta = question.question_meta;
       return meta;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -149,7 +149,7 @@ export class QuestionsService {
       await this.question_metaRepository.save(question_meta);
       return question_meta;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
   /**
@@ -167,7 +167,7 @@ export class QuestionsService {
 
       return question;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
   /**
@@ -195,7 +195,7 @@ export class QuestionsService {
       await this.answerRepository.save(answer);
       return answer;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -211,7 +211,7 @@ export class QuestionsService {
 
       return answers;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -225,7 +225,7 @@ export class QuestionsService {
       });
       return asnwerTitles;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -237,7 +237,7 @@ export class QuestionsService {
       }
       return answer;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -248,7 +248,7 @@ export class QuestionsService {
       await this.answerRepository.softDelete(id);
       return answer;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -263,7 +263,7 @@ export class QuestionsService {
       await this.answerRepository.save(answer);
       return answer;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -285,7 +285,7 @@ export class QuestionsService {
       }
       return answers;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -301,7 +301,7 @@ export class QuestionsService {
       });
       return correct;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -323,7 +323,7 @@ export class QuestionsService {
       }
       return [{ answer_is_correct: true }];
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 }

@@ -30,7 +30,7 @@ export class DiscusionService {
       }
       return discusions;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -46,7 +46,7 @@ export class DiscusionService {
 
       return discusion;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -61,7 +61,7 @@ export class DiscusionService {
       await this.discusionRepository.save(discusion);
       return discusion;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -76,7 +76,7 @@ export class DiscusionService {
       await this.discusionRepository.softDelete(discusion_id);
       return discusion;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -96,7 +96,7 @@ export class DiscusionService {
       await this.discusionRepository.save(discusion);
       return discusion;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 }
