@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateRoleDto } from './dto/create-role-dto';
@@ -42,7 +42,7 @@ export class RolesService {
       await this.roleRepository.save(role);
       return role;
     } catch (err) {
-      return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -56,7 +56,7 @@ export class RolesService {
 
       return roles;
     } catch (err) {
-      return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -69,7 +69,7 @@ export class RolesService {
       });
       return roleNames;
     } catch (err) {
-      return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -81,26 +81,34 @@ export class RolesService {
       }
       return role;
     } catch (err) {
-      return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
   async deleteRole(id: number): Promise<any> {
-    const role = await this.getRole(id);
-    if (role.message) {
+    try {
+      const role = await this.getRole(id);
+      if (role.message) {
+        return role;
+      }
+      await this.roleRepository.softDelete(id);
       return role;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
-    await this.roleRepository.softDelete(id);
-    return role;
   }
 
   async updateRole(id: number, updateRoleDto: UpdateRoleDto): Promise<any> {
-    let role = await this.getRole(id);
-    if (role.message) {
+    try {
+      let role = await this.getRole(id);
+      if (role.message) {
+        return role;
+      }
+      role = { ...role, ...updateRoleDto };
+      await this.roleRepository.save(role);
       return role;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
-    role = { ...role, ...updateRoleDto };
-    await this.roleRepository.save(role);
-    return role;
   }
 }
