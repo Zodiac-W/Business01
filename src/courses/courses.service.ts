@@ -72,7 +72,7 @@ export class CoursesService {
       await this.courseRepository.save(course);
       return course;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -86,7 +86,7 @@ export class CoursesService {
 
       return courses;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -101,7 +101,7 @@ export class CoursesService {
       });
       return coursesTitles;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -113,7 +113,7 @@ export class CoursesService {
       }
       return course;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -124,7 +124,7 @@ export class CoursesService {
       await this.courseRepository.softDelete(id);
       return course;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -139,7 +139,7 @@ export class CoursesService {
       await this.courseRepository.save(course);
       return course;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
   /**
@@ -186,7 +186,7 @@ export class CoursesService {
 
       return course;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
   /**
@@ -216,7 +216,7 @@ export class CoursesService {
       await this.course_metaRepository.save(course_meta);
       return course_meta;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -237,7 +237,7 @@ export class CoursesService {
       const currentRound = rounds[rounds.length - 1];
       return { rounds: currentRound };
     } catch (err) {
-      throw new HttpException(err.messagem, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.messagem, HttpStatus.BAD_REQUEST);
     }
   }
   /**
@@ -259,7 +259,7 @@ export class CoursesService {
       const meta = course.course_meta;
       return meta;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -287,7 +287,7 @@ export class CoursesService {
       });
       return metadata;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -314,7 +314,7 @@ export class CoursesService {
       await this.course_metaRepository.save(course_meta);
       return course_meta;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -331,7 +331,7 @@ export class CoursesService {
 
       return course_meta;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
   /**
@@ -354,7 +354,7 @@ export class CoursesService {
       }
       return groups;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -368,7 +368,7 @@ export class CoursesService {
       }
       return group;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -385,7 +385,7 @@ export class CoursesService {
       }
       return group;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -397,7 +397,7 @@ export class CoursesService {
       await this.course_metadata_groupRepository.save(group);
       return group;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -408,7 +408,7 @@ export class CoursesService {
       await this.course_metadata_groupRepository.softDelete(group_id);
       return group;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -424,7 +424,7 @@ export class CoursesService {
       await this.course_metadata_groupRepository.save(group);
       return group;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
   /**
@@ -448,7 +448,7 @@ export class CoursesService {
       }
       return course_lessons;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -469,7 +469,7 @@ export class CoursesService {
 
       return course_lesson;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -485,7 +485,7 @@ export class CoursesService {
       await this.course_lessonRepository.save(course_lesson);
       return course_lesson;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -504,7 +504,7 @@ export class CoursesService {
       await this.course_lessonRepository.save(course_lesson);
       return course_lesson;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -519,7 +519,7 @@ export class CoursesService {
       await this.course_lessonRepository.softDelete(course_lesson.id);
       return course_lesson;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -545,7 +545,7 @@ export class CoursesService {
       );
       return new_course_lesson;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
   /**
@@ -574,7 +574,7 @@ export class CoursesService {
       }
       return instructor;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
   /**
@@ -599,7 +599,7 @@ export class CoursesService {
       }
       return course_quizzes;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -620,7 +620,7 @@ export class CoursesService {
 
       return course_quiz;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -636,7 +636,7 @@ export class CoursesService {
       await this.course_quizRepository.save(course_quiz);
       return course_quiz;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -651,7 +651,7 @@ export class CoursesService {
       await this.course_quizRepository.softDelete(course_quiz.id);
       return course_quiz;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -671,7 +671,7 @@ export class CoursesService {
       const new_course_quiz = await this.setCourseQuiz(course_id, quiz_id_new);
       return new_course_quiz;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
   /**
@@ -697,7 +697,7 @@ export class CoursesService {
 
       return course_discusion;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -717,7 +717,7 @@ export class CoursesService {
 
       return course_discusion;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -736,7 +736,7 @@ export class CoursesService {
       await this.course_discusionRepository.save(course_discusion);
       return course_discusion;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -757,7 +757,7 @@ export class CoursesService {
       await this.course_discusionRepository.softDelete(course_discusion.id);
       return course_discusion;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -783,7 +783,7 @@ export class CoursesService {
       );
       return new_course_discusion;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 }

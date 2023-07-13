@@ -23,7 +23,7 @@ export class AuthService {
         access_token: this.jwtService.sign(payload),
       };
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -39,7 +39,7 @@ export class AuthService {
         access_token: this.jwtService.sign(payload),
       };
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -48,7 +48,7 @@ export class AuthService {
       const user = await this.usersService.validateUser(payload.sub);
       return user;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 }
