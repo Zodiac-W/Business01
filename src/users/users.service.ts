@@ -121,7 +121,7 @@ export class UsersService {
         }
       } catch (err) {
         // return { message: err.message };
-        throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+        throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
       }
 
       const salt = await bcrypt.genSalt(10);
@@ -140,7 +140,7 @@ export class UsersService {
 
       return userPassed;
     } catch (err) {
-      return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -164,11 +164,10 @@ export class UsersService {
         const { user_pass: pass, ...userPassed } = user;
         return userPassed;
       } catch (err) {
-        return { message: err.message };
+        throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
       }
     } catch (err) {
-      // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -181,7 +180,7 @@ export class UsersService {
       return user;
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -204,7 +203,7 @@ export class UsersService {
       const user_type = user.user_type;
       return { user_type };
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -216,8 +215,7 @@ export class UsersService {
       }
       return users;
     } catch (err) {
-      // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -231,8 +229,7 @@ export class UsersService {
       });
       return usernames;
     } catch (err) {
-      // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -247,7 +244,7 @@ export class UsersService {
 
       return user;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -263,7 +260,7 @@ export class UsersService {
 
       return user;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -278,7 +275,7 @@ export class UsersService {
       return user;
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -293,7 +290,7 @@ export class UsersService {
       return user;
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
   /**
@@ -315,7 +312,7 @@ export class UsersService {
       await this.user_metaRepository.save(user_meta);
       return user_meta;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
   /**
@@ -336,8 +333,7 @@ export class UsersService {
       const meta = user.user_meta;
       return meta;
     } catch (err) {
-      // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -356,7 +352,7 @@ export class UsersService {
       await this.user_metaRepository.save(user_meta);
       return user_meta;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
   /**
@@ -386,8 +382,7 @@ export class UsersService {
       await this.user_roleRepository.save(user_role);
       return user_role;
     } catch (err) {
-      // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -406,7 +401,7 @@ export class UsersService {
       return role;
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -425,7 +420,7 @@ export class UsersService {
       return user_role;
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -441,7 +436,7 @@ export class UsersService {
       return new_user_role;
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
   /**
@@ -467,7 +462,7 @@ export class UsersService {
       return student_courses;
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -488,7 +483,7 @@ export class UsersService {
       return student_course;
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -515,7 +510,7 @@ export class UsersService {
       return student_course;
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -530,7 +525,7 @@ export class UsersService {
       await this.student_courseRepository.softDelete(student_course.id);
       return student_course;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -550,7 +545,7 @@ export class UsersService {
       await this.student_courseRepository.save(student_course);
       return student_course;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
   /**
@@ -577,7 +572,7 @@ export class UsersService {
       return instructor_courses;
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -598,7 +593,7 @@ export class UsersService {
       return instructor_course;
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -625,8 +620,7 @@ export class UsersService {
       await this.instructor_courseRepository.save(instructor_course);
       return instructor_course;
     } catch (err) {
-      // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -644,8 +638,7 @@ export class UsersService {
       await this.instructor_courseRepository.softDelete(instructor_course.id);
       return instructor_course;
     } catch (err) {
-      // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -670,7 +663,7 @@ export class UsersService {
       return instructor_course;
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
   /**
@@ -696,7 +689,7 @@ export class UsersService {
       return student_lesson;
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -717,7 +710,7 @@ export class UsersService {
       return student_lesson;
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -744,7 +737,7 @@ export class UsersService {
       return student_lesson;
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -760,7 +753,7 @@ export class UsersService {
       return student_lesson;
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -782,7 +775,7 @@ export class UsersService {
       return student_lesson;
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
   /**
@@ -809,7 +802,7 @@ export class UsersService {
       return instructor_lesson;
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -830,7 +823,7 @@ export class UsersService {
       return instructor_lesson;
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -855,8 +848,7 @@ export class UsersService {
       await this.instructor_lessonRepository.save(instructor_lesson);
       return instructor_lesson;
     } catch (err) {
-      // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -874,8 +866,7 @@ export class UsersService {
       await this.instructor_lessonRepository.softDelete(instructor_lesson.id);
       return instructor_lesson;
     } catch (err) {
-      // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -898,8 +889,7 @@ export class UsersService {
       await this.instructor_lessonRepository.save(instructor_lesson);
       return instructor_lesson;
     } catch (err) {
-      // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
   /**
@@ -924,8 +914,7 @@ export class UsersService {
       }
       return student_quiz;
     } catch (err) {
-      // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -946,8 +935,7 @@ export class UsersService {
       }
       return student_quiz;
     } catch (err) {
-      // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -962,8 +950,7 @@ export class UsersService {
       }
       return student_quiz;
     } catch (err) {
-      // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -992,7 +979,7 @@ export class UsersService {
       return student_quiz;
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -1007,8 +994,7 @@ export class UsersService {
       await this.student_quizRepository.softDelete(student_quiz.id);
       return student_quiz;
     } catch (err) {
-      // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -1029,8 +1015,7 @@ export class UsersService {
       await this.student_quizRepository.save(student_quiz);
       return student_quiz;
     } catch (err) {
-      // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
   /**
@@ -1055,8 +1040,7 @@ export class UsersService {
       }
       return student_quiz_questions;
     } catch (err) {
-      // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -1081,7 +1065,7 @@ export class UsersService {
       return student_quiz_question;
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -1138,11 +1122,11 @@ export class UsersService {
         return student_quiz_question;
       } catch (err) {
         // return { message: err.message };
-        throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+        throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
       }
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -1166,7 +1150,7 @@ export class UsersService {
       return student_quiz_question;
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -1199,7 +1183,7 @@ export class UsersService {
       return student_quiz_question;
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
   /**
@@ -1234,7 +1218,7 @@ export class UsersService {
       }
       return null;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -1253,7 +1237,7 @@ export class UsersService {
       });
       return is_correct;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -1276,7 +1260,7 @@ export class UsersService {
         return { reviewed };
       }
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -1297,7 +1281,7 @@ export class UsersService {
       return { answer_txt };
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -1319,7 +1303,7 @@ export class UsersService {
       await this.student_quiz_questionRepository.save(student_quiz_question);
       return student_quiz_question;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
   /**
@@ -1346,7 +1330,7 @@ export class UsersService {
       return comments;
     } catch (err) {
       // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -1363,8 +1347,7 @@ export class UsersService {
 
       return comment;
     } catch (err) {
-      // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -1384,7 +1367,7 @@ export class UsersService {
       await this.commentRepository.save(comment);
       return comment;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -1399,7 +1382,7 @@ export class UsersService {
       await this.commentRepository.softDelete(comment_id);
       return comment;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -1418,7 +1401,7 @@ export class UsersService {
       await this.commentRepository.save(comment);
       return comment;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
   /**
@@ -1443,8 +1426,7 @@ export class UsersService {
 
       return comment_replays;
     } catch (err) {
-      // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -1460,8 +1442,7 @@ export class UsersService {
       }
       return replay;
     } catch (err) {
-      // return { message: err.message };
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -1483,7 +1464,7 @@ export class UsersService {
       await this.comment_replayRepository.save(comment_replay);
       return comment_replay;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -1498,7 +1479,7 @@ export class UsersService {
       await this.comment_replayRepository.softDelete(comment_replay.id);
       return comment_replay;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -1517,7 +1498,7 @@ export class UsersService {
       await this.comment_replayRepository.save(replay);
       return replay;
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 }
