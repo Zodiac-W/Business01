@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateQuizDto } from './dto/create-quiz-dto';
@@ -29,54 +29,79 @@ export class QuizzesService {
    */
 
   async createQuiz(createQuizDto: CreateQuizDto): Promise<any> {
-    const { quiz_title, quiz_description, quiz_passing_score } = createQuizDto;
+    try {
+      const { quiz_title, quiz_description, quiz_passing_score } =
+        createQuizDto;
 
-    const quiz = new Quiz();
-    quiz.quiz_title = quiz_title;
-    quiz.quiz_description = quiz_description;
-    quiz.quiz_passing_score = quiz_passing_score;
+      const quiz = new Quiz();
+      quiz.quiz_title = quiz_title;
+      quiz.quiz_description = quiz_description;
+      quiz.quiz_passing_score = quiz_passing_score;
 
-    await this.quizRepository.save(quiz);
-    return quiz;
+      await this.quizRepository.save(quiz);
+      return quiz;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   async getAllQuizzes(): Promise<any> {
-    const quizzes = await this.quizRepository.find();
-    return quizzes;
+    try {
+      const quizzes = await this.quizRepository.find();
+      return quizzes;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   async getAllQuizzesTitles(): Promise<any> {
-    const titles = await this.quizRepository.find({
-      select: ['quiz_title'],
-    });
-    const quizzesTitles = titles.map((title) => {
-      return { quize_title: title };
-    });
-    return quizzesTitles;
+    try {
+      const titles = await this.quizRepository.find({
+        select: ['quiz_title'],
+      });
+      const quizzesTitles = titles.map((title) => {
+        return { quize_title: title };
+      });
+      return quizzesTitles;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   async getQuiz(id: number): Promise<any> {
-    const quiz = await this.quizRepository.findOne({ where: { id } });
+    try {
+      const quiz = await this.quizRepository.findOne({ where: { id } });
 
-    if (!quiz) {
-      throw Error("Quiz doesn't exist");
+      if (!quiz) {
+        throw Error("Quiz doesn't exist");
+      }
+      return quiz;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
-    return quiz;
   }
 
   async deleteQuiz(id: number): Promise<any> {
-    const quiz = this.getQuiz(id);
+    try {
+      const quiz = this.getQuiz(id);
 
-    await this.quizRepository.softDelete(id);
-    return quiz;
+      await this.quizRepository.softDelete(id);
+      return quiz;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   async updateQuiz(id: number, updateQuizDto: UpdateQuizDto): Promise<any> {
-    let quiz = await this.getQuiz(id);
-    quiz = { ...quiz, ...updateQuizDto };
+    try {
+      let quiz = await this.getQuiz(id);
+      quiz = { ...quiz, ...updateQuizDto };
 
-    await this.quizRepository.save(quiz);
-    return quiz;
+      await this.quizRepository.save(quiz);
+      return quiz;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
   /**
    *
@@ -86,24 +111,32 @@ export class QuizzesService {
    *
    */
   async getQuizMeta(id: number): Promise<any> {
-    const quiz = await this.quizRepository.findOne({
-      where: { id },
-      relations: ['quiz_meta'],
-    });
-    const meta = quiz.quiz_meta;
-    return meta;
+    try {
+      const quiz = await this.quizRepository.findOne({
+        where: { id },
+        relations: ['quiz_meta'],
+      });
+      const meta = quiz.quiz_meta;
+      return meta;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   async setQuizMeta(id: number, key: string, value: any): Promise<any> {
-    const quiz = await this.getQuiz(id);
+    try {
+      const quiz = await this.getQuiz(id);
 
-    const quiz_meta = new Quiz_meta();
-    quiz_meta.meta_key = key;
-    quiz_meta.meta_value = value;
-    quiz_meta.quiz = quiz;
+      const quiz_meta = new Quiz_meta();
+      quiz_meta.meta_key = key;
+      quiz_meta.meta_value = value;
+      quiz_meta.quiz = quiz;
 
-    await this.quiz_metaRepository.save(quiz_meta);
-    return quiz_meta;
+      await this.quiz_metaRepository.save(quiz_meta);
+      return quiz_meta;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
   /**
    *
@@ -115,25 +148,28 @@ export class QuizzesService {
    *
    */
   async getQuizQuestions(id: number): Promise<any> {
-    const quiz = await this.quizRepository.find({
-      where: { id },
-      relations: ['quiz_question', 'quiz_question.question'],
-    });
     try {
-      const questions = quiz.map((item) => {
-        return item.quiz_question;
+      const quiz = await this.quizRepository.find({
+        where: { id },
+        relations: ['quiz_question', 'quiz_question.question'],
       });
+      try {
+        const questions = quiz.map((item) => {
+          return item.quiz_question;
+        });
 
-      return questions;
+        return questions;
+      } catch (err) {
+        throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+      }
     } catch (err) {
-      return { message: 'There is no questions for this quiz yet' };
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
   async getQuizQuestion(quizId: number, questionId: number): Promise<any> {
-    let quiz_question: any;
     try {
-      quiz_question = await this.quiz_questionRepository.findOne({
+      const quiz_question = await this.quiz_questionRepository.findOne({
         where: { quiz: { id: quizId }, question: { id: questionId } },
         relations: ['quiz', 'question'],
       });
@@ -142,33 +178,34 @@ export class QuizzesService {
       }
       return quiz_question;
     } catch (err) {
-      return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
   async setQuizQuestion(quizId: number, questionId: number): Promise<any> {
-    let quiz: any;
-    let question: any;
     try {
-      quiz = await this.getQuiz(quizId);
-      question = await this.questionsService.getQuestion(questionId);
+      const quiz = await this.getQuiz(quizId);
+      const question = await this.questionsService.getQuestion(questionId);
+      const quiz_question = new Quiz_question();
+      quiz_question.quiz = quiz;
+      quiz_question.question = question;
+
+      await this.quiz_questionRepository.save(quiz_question);
+      return quiz_question;
     } catch (err) {
-      return { message: err.message };
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
-
-    const quiz_question = new Quiz_question();
-    quiz_question.quiz = quiz;
-    quiz_question.question = question;
-
-    await this.quiz_questionRepository.save(quiz_question);
-    return quiz_question;
   }
 
   async deleteQuizQuestion(quizId: number, questionId: number): Promise<any> {
-    const quiz_question = await this.getQuizQuestion(quizId, questionId);
+    try {
+      const quiz_question = await this.getQuizQuestion(quizId, questionId);
 
-    await this.quiz_questionRepository.softDelete(quiz_question.id);
-    return quiz_question;
+      await this.quiz_questionRepository.softDelete(quiz_question.id);
+      return quiz_question;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   async updateQuizQuestion(
@@ -176,9 +213,13 @@ export class QuizzesService {
     questionId: number,
     newQuestionId: number,
   ): Promise<any> {
-    await this.deleteQuizQuestion(quizId, questionId);
-    const quiz_question = await this.setQuizQuestion(quizId, newQuestionId);
+    try {
+      await this.deleteQuizQuestion(quizId, questionId);
+      const quiz_question = await this.setQuizQuestion(quizId, newQuestionId);
 
-    return quiz_question;
+      return quiz_question;
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 }
